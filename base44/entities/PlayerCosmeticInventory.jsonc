@@ -1,0 +1,28 @@
+{
+  "name": "PlayerCosmeticInventory",
+  "type": "object",
+  "properties": {
+    "player_email": {
+      "type": "string",
+      "description": "Email of the player"
+    },
+    "cosmetic_id": {
+      "type": "string",
+      "description": "ID of the cosmetic item"
+    },
+    "purchased_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the item was purchased"
+    },
+    "is_equipped": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this item is currently equipped/active"
+    }
+  },
+  "required": [
+    "player_email",
+    "cosmetic_id"
+  ]
+}

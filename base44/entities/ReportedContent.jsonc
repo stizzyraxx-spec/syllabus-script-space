@@ -1,0 +1,92 @@
+{
+  "name": "ReportedContent",
+  "type": "object",
+  "properties": {
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "post",
+        "comment"
+      ],
+      "description": "Type of reported content"
+    },
+    "post_id": {
+      "type": "string",
+      "description": "ID of reported post (if content_type is post)"
+    },
+    "comment_id": {
+      "type": "string",
+      "description": "ID of reported comment (if content_type is comment)"
+    },
+    "reported_user_email": {
+      "type": "string",
+      "description": "Email of user who created the reported content"
+    },
+    "reporter_email": {
+      "type": "string",
+      "description": "Email of user who reported the content"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "spam",
+        "harassment",
+        "hate_speech",
+        "misinformation",
+        "inappropriate",
+        "other"
+      ],
+      "description": "Reason for report"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the violation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "under_review",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "pending",
+      "description": "Current status of the report"
+    },
+    "content_preview": {
+      "type": "string",
+      "description": "Preview of the reported content"
+    },
+    "moderator_email": {
+      "type": "string",
+      "description": "Email of moderator handling the report"
+    },
+    "moderator_action": {
+      "type": "string",
+      "enum": [
+        "none",
+        "warned",
+        "content_removed",
+        "user_suspended"
+      ],
+      "default": "none",
+      "description": "Action taken by moderator"
+    },
+    "moderator_notes": {
+      "type": "string",
+      "description": "Notes from moderator decision"
+    },
+    "report_count": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of times this content has been reported"
+    }
+  },
+  "required": [
+    "content_type",
+    "reported_user_email",
+    "reporter_email",
+    "reason",
+    "status"
+  ]
+}

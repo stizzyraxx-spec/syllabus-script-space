@@ -1,0 +1,38 @@
+{
+  "name": "CoinPurchase",
+  "type": "object",
+  "properties": {
+    "player_email": {
+      "type": "string",
+      "description": "Email of the player"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Stripe checkout session ID"
+    },
+    "coins_purchased": {
+      "type": "number",
+      "description": "Amount of coins purchased"
+    },
+    "amount_usd": {
+      "type": "number",
+      "description": "Amount paid in USD"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Purchase status"
+    }
+  },
+  "required": [
+    "player_email",
+    "stripe_session_id",
+    "coins_purchased",
+    "amount_usd"
+  ]
+}

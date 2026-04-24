@@ -1,0 +1,48 @@
+{
+  "name": "PlayerMessage",
+  "type": "object",
+  "properties": {
+    "from_email": {
+      "type": "string",
+      "description": "Sender's email"
+    },
+    "from_name": {
+      "type": "string",
+      "description": "Sender's display name"
+    },
+    "to_email": {
+      "type": "string",
+      "description": "Recipient's email"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "chat",
+        "coop_invite",
+        "party_request"
+      ],
+      "default": "chat",
+      "description": "Type of message"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether message has been read"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "Conversation identifier"
+    }
+  },
+  "required": [
+    "from_email",
+    "from_name",
+    "to_email",
+    "content",
+    "conversation_id"
+  ]
+}

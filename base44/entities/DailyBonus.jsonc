@@ -1,0 +1,34 @@
+{
+  "name": "DailyBonus",
+  "type": "object",
+  "properties": {
+    "player_email": {
+      "type": "string",
+      "description": "Email of the player"
+    },
+    "bonus_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the bonus claim"
+    },
+    "coins_earned": {
+      "type": "number",
+      "default": 50,
+      "description": "Coins awarded for daily login"
+    },
+    "streak_days": {
+      "type": "number",
+      "default": 1,
+      "description": "Current login streak"
+    },
+    "last_claim_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Last date bonus was claimed"
+    }
+  },
+  "required": [
+    "player_email",
+    "bonus_date"
+  ]
+}

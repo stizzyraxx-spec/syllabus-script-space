@@ -1,0 +1,28 @@
+{
+  "name": "PlayerSkillTree",
+  "type": "object",
+  "properties": {
+    "player_email": {
+      "type": "string",
+      "description": "Email of the player"
+    },
+    "node_id": {
+      "type": "string",
+      "description": "Unique identifier for the skill tree node"
+    },
+    "node_name": {
+      "type": "string",
+      "description": "Name of the skill or stat enhancement"
+    },
+    "unlocked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this node has been unlocked"
+    }
+  },
+  "required": [
+    "player_email",
+    "node_id",
+    "node_name"
+  ]
+}

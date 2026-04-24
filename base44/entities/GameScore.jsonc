@@ -1,0 +1,41 @@
+{
+  "name": "GameScore",
+  "type": "object",
+  "properties": {
+    "player_email": {
+      "type": "string",
+      "description": "Email of the player"
+    },
+    "player_name": {
+      "type": "string",
+      "description": "Display name of the player"
+    },
+    "game_type": {
+      "type": "string",
+      "enum": [
+        "match3",
+        "finish_verse",
+        "spot_false",
+        "bible_trivia",
+        "scramble",
+        "disciples_conquest",
+        "crossword",
+        "word_search"
+      ],
+      "description": "Type of game played"
+    },
+    "score": {
+      "type": "number",
+      "description": "Final score achieved"
+    },
+    "difficulty": {
+      "type": "string",
+      "description": "Difficulty level (if applicable)"
+    }
+  },
+  "required": [
+    "player_email",
+    "game_type",
+    "score"
+  ]
+}

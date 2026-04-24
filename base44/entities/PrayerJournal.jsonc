@@ -1,0 +1,81 @@
+{
+  "name": "PrayerJournal",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who owns this journal entry"
+    },
+    "entry_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the journal entry"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title or topic of the prayer entry"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full prayer journal content (markdown supported)"
+    },
+    "mood": {
+      "type": "string",
+      "enum": [
+        "grateful",
+        "peaceful",
+        "hopeful",
+        "struggling",
+        "joyful",
+        "reflective"
+      ],
+      "description": "Emotional state during prayer"
+    },
+    "associated_verses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "book": {
+            "type": "string"
+          },
+          "chapter": {
+            "type": "number"
+          },
+          "verse": {
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "default": [],
+      "description": "Bible verses associated with this prayer entry"
+    },
+    "prayer_requests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Specific prayer requests mentioned in this entry"
+    },
+    "is_private": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this entry is visible only to the user"
+    },
+    "answered": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the prayer request was answered"
+    }
+  },
+  "required": [
+    "user_email",
+    "entry_date",
+    "title",
+    "content"
+  ]
+}

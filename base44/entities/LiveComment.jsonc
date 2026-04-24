@@ -1,0 +1,44 @@
+{
+  "name": "LiveComment",
+  "type": "object",
+  "properties": {
+    "stream_id": {
+      "type": "string",
+      "description": "ID of the live stream"
+    },
+    "author_email": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "comment",
+        "gift",
+        "join"
+      ],
+      "default": "comment"
+    },
+    "gift_emoji": {
+      "type": "string",
+      "description": "Emoji for gift type"
+    },
+    "gift_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "stream_id",
+    "author_email",
+    "content",
+    "type"
+  ]
+}

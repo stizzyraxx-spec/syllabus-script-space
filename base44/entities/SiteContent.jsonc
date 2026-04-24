@@ -1,0 +1,27 @@
+{
+  "name": "SiteContent",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique identifier for this content block (e.g. 'about_who_i_am_p1')"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable label shown in admin"
+    },
+    "section": {
+      "type": "string",
+      "description": "Which page/section this belongs to (e.g. 'about', 'home', 'donate')"
+    },
+    "value": {
+      "type": "string",
+      "description": "The actual text content"
+    }
+  },
+  "required": [
+    "key",
+    "value",
+    "section"
+  ]
+}

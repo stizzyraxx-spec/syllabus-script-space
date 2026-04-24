@@ -1,0 +1,76 @@
+{
+  "name": "BiblePlan",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Plan name (e.g., 'Psalms for Peace')"
+    },
+    "description": {
+      "type": "string",
+      "description": "Overview of the plan"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "fixed",
+        "selfpaced"
+      ],
+      "description": "Fixed duration or self-paced"
+    },
+    "duration_days": {
+      "type": "number",
+      "description": "Number of days in the plan"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Only for fixed plans - when the plan begins"
+    },
+    "readings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "number"
+          },
+          "book": {
+            "type": "string"
+          },
+          "chapter": {
+            "type": "number"
+          },
+          "verses": {
+            "type": "string",
+            "description": "e.g., '1-10'"
+          },
+          "title": {
+            "type": "string"
+          },
+          "discussion_prompt": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Daily readings with prompts"
+    },
+    "enrolled_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of enrolled users"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Public or private plan"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "type",
+    "duration_days",
+    "readings"
+  ]
+}

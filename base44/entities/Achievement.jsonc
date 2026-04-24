@@ -1,0 +1,44 @@
+{
+  "name": "Achievement",
+  "type": "object",
+  "properties": {
+    "achievement_id": {
+      "type": "string",
+      "description": "Unique identifier for the achievement"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the achievement"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of what the achievement requires"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji or icon representation"
+    },
+    "xp_reward": {
+      "type": "number",
+      "default": 0,
+      "description": "XP awarded when unlocked"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "combat",
+        "exploration",
+        "skills",
+        "progression"
+      ],
+      "description": "Category of achievement"
+    }
+  },
+  "required": [
+    "achievement_id",
+    "name",
+    "description",
+    "icon",
+    "category"
+  ]
+}

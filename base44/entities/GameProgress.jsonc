@@ -1,0 +1,36 @@
+{
+  "name": "GameProgress",
+  "type": "object",
+  "properties": {
+    "player_email": {
+      "type": "string",
+      "description": "Email of the player"
+    },
+    "character_id": {
+      "type": "string",
+      "description": "ID of the character in the game"
+    },
+    "visited_places": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "default": [],
+      "description": "Indices of visited locations"
+    },
+    "score": {
+      "type": "number",
+      "default": 0,
+      "description": "Current score for this character"
+    },
+    "player_pos": {
+      "type": "number",
+      "default": 0,
+      "description": "Current player position in the journey"
+    }
+  },
+  "required": [
+    "player_email",
+    "character_id"
+  ]
+}

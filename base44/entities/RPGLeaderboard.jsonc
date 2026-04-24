@@ -1,0 +1,48 @@
+{
+  "name": "RPGLeaderboard",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Unique session identifier for local leaderboard"
+    },
+    "player_name": {
+      "type": "string",
+      "description": "Player name (optional, can be anon)"
+    },
+    "character_id": {
+      "type": "string",
+      "description": "Character played"
+    },
+    "final_score": {
+      "type": "number",
+      "description": "Final moral score"
+    },
+    "final_level": {
+      "type": "number",
+      "description": "Final level reached"
+    },
+    "faith_final": {
+      "type": "number"
+    },
+    "wisdom_final": {
+      "type": "number"
+    },
+    "obedience_final": {
+      "type": "number"
+    },
+    "integrity_final": {
+      "type": "number"
+    },
+    "missions_completed": {
+      "type": "number"
+    },
+    "playtime_minutes": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "session_id",
+    "final_score"
+  ]
+}

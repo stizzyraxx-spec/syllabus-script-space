@@ -1,0 +1,53 @@
+{
+  "name": "PrayerRequest",
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string",
+      "description": "The prayer request text"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Email of the author (null if anonymous)"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Display name of the author"
+    },
+    "is_anonymous": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether posted anonymously"
+    },
+    "prayer_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of people praying"
+    },
+    "prayed_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "List of user emails who clicked Praying"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "health",
+        "family",
+        "finances",
+        "guidance",
+        "salvation",
+        "gratitude",
+        "other"
+      ],
+      "default": "other",
+      "description": "Category of prayer request"
+    }
+  },
+  "required": [
+    "content"
+  ]
+}

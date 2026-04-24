@@ -1,0 +1,57 @@
+{
+  "name": "GroupChatMessage",
+  "type": "object",
+  "properties": {
+    "channel": {
+      "type": "string",
+      "enum": [
+        "general",
+        "prophecy",
+        "false_teachings",
+        "relationships",
+        "old_testament",
+        "new_testament",
+        "grace_mercy",
+        "end_times",
+        "prayer_requests",
+        "testimonies"
+      ],
+      "default": "general",
+      "description": "Chat channel/topic"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Email of the person sending the message"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Display name of the sender"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Avatar URL of the sender"
+    },
+    "content": {
+      "type": "string",
+      "description": "The chat message text"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of likes on this message"
+    },
+    "liked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "List of user emails who liked this message"
+    }
+  },
+  "required": [
+    "author_email",
+    "content",
+    "channel"
+  ]
+}

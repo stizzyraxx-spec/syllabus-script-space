@@ -1,0 +1,49 @@
+{
+  "name": "BibleHighlight",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who created the highlight"
+    },
+    "book": {
+      "type": "string",
+      "description": "Bible book name (e.g., 'John', 'Romans')"
+    },
+    "chapter": {
+      "type": "number",
+      "description": "Chapter number"
+    },
+    "verse": {
+      "type": "number",
+      "description": "Verse number"
+    },
+    "text": {
+      "type": "string",
+      "description": "The highlighted verse text"
+    },
+    "color": {
+      "type": "string",
+      "enum": [
+        "yellow",
+        "green",
+        "blue",
+        "pink",
+        "orange"
+      ],
+      "default": "yellow",
+      "description": "Highlight color"
+    },
+    "note": {
+      "type": "string",
+      "description": "User's personal note about the highlight"
+    }
+  },
+  "required": [
+    "user_email",
+    "book",
+    "chapter",
+    "verse",
+    "text"
+  ]
+}
