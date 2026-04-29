@@ -30,28 +30,44 @@ const PRESET_COLORS = [
 export default function EditProfileModal({ profile, currentUser, onClose }) {
   const queryClient = useQueryClient();
   const { accentColor, setAccentColor } = useTheme();
+
+  // Read any prior locally-cached edit so the form re-opens with what the
+  // user last saved, even when the DB write was unavailable.
+  const localCache = (() => {
+    try {
+      const raw = localStorage.getItem(`tcom-profile-${currentUser?.email}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  })();
+
+  const merged = { ...(localCache || {}), ...(profile || {}) };
+  // For the locally-cached fields the user explicitly set, prefer the local
+  // value over the empty DB value.
+  const fieldOr = (key, fallback = "") =>
+    profile?.[key] ?? localCache?.[key] ?? fallback;
+
   const [form, setForm] = useState({
-    display_name: profile?.display_name || currentUser?.full_name || "",
-    username: profile?.username || "",
-    bio: profile?.bio || "",
-    phone_number: profile?.phone_number || "",
-    tiktok: profile?.tiktok || "",
-    instagram: profile?.instagram || "",
-    twitter: profile?.twitter || "",
-    facebook: profile?.facebook || "",
-    youtube: profile?.youtube || "",
-    website: profile?.website || "",
-    avatar_url: profile?.avatar_url || "",
-    interest_tags: profile?.interest_tags || [],
-    bio_links: profile?.bio_links || [],
-    notification_preferences: profile?.notification_preferences || {},
-    is_creator: profile?.is_creator || false,
-    testimony: profile?.testimony || "",
-    language_preference: profile?.language_preference || "KJV",
-    accent_color: profile?.accent_color || accentColor,
+    display_name: fieldOr("display_name", currentUser?.full_name || ""),
+    username: fieldOr("username"),
+    bio: fieldOr("bio"),
+    phone_number: fieldOr("phone_number"),
+    tiktok: fieldOr("tiktok"),
+    instagram: fieldOr("instagram"),
+    twitter: fieldOr("twitter"),
+    facebook: fieldOr("facebook"),
+    youtube: fieldOr("youtube"),
+    website: fieldOr("website"),
+    avatar_url: fieldOr("avatar_url"),
+    interest_tags: profile?.interest_tags ?? localCache?.interest_tags ?? [],
+    bio_links: profile?.bio_links ?? localCache?.bio_links ?? [],
+    notification_preferences: profile?.notification_preferences ?? localCache?.notification_preferences ?? {},
+    is_creator: profile?.is_creator ?? localCache?.is_creator ?? false,
+    testimony: fieldOr("testimony"),
+    language_preference: fieldOr("language_preference", "KJV"),
+    accent_color: fieldOr("accent_color", accentColor),
   });
   const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url || "");
+  const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url || localCache?.avatar_url || "");
   const [uploading, setUploading] = useState(false);
   const [showNotifPrefs, setShowNotifPrefs] = useState(false);
 
