@@ -124,13 +124,13 @@ export default function Donate() {
         >
           <h4 className="font-display text-xl font-bold text-foreground">A Note of Thanks</h4>
           <p className="font-body text-sm text-foreground/85 leading-relaxed">
-            I pour countless hours into building, refining, and updating The Condition of Man — and I do it because this work matters. Every verse loaded, every game polished, every feature shipped is part of a labor of love to put Scripture in front of more people.
+            I pour countless hours into building, refining, and updating The Condition of Man, and I do it because this work matters. Every verse loaded, every game polished, every feature shipped is part of a labor of love to put Scripture in front of more people.
           </p>
           <p className="font-body text-sm text-foreground/85 leading-relaxed">
-            If you have an idea — a feature you want to see, a bug that bothers you, a tool you wish existed here — please send it through the Help &amp; Support form (the question-mark icon at the top of every page). If it's reasonable, I will build it.
+            If you have an idea, a feature you want to see, a bug that bothers you, a tool you wish existed here, please send it through the Help &amp; Support form (the question-mark icon at the top of every page). If it's reasonable, I will build it.
           </p>
           <p className="font-body text-sm text-foreground/85 leading-relaxed">
-            And from the bottom of my heart — <span className="text-accent font-semibold">thank you</span>. Whether you give a dollar, share the site with a friend, suggest a feature, or simply read the Word here, you are part of this. I am profoundly grateful for every single one of you. Keep walking with the Lord.
+            And from the bottom of my heart, <span className="text-accent font-semibold">thank you</span>. Whether you give a dollar, share the site with a friend, suggest a feature, or simply read the Word here, you are part of this. I am profoundly grateful for every single one of you. Keep walking with the Lord.
           </p>
         </motion.div>
       </div>
