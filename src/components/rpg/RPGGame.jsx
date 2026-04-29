@@ -53,6 +53,72 @@ const CHARACTER_DATA = {
     backstory: "From denier to rock, learning faith through failure and restoration",
     traits: ["redemption", "faith", "growth"],
     color: "#FF8C42"
+  },
+  noah: {
+    name: "Noah",
+    backstory: "A righteous man building an ark while the world mocks, trusting God's warning",
+    traits: ["faith", "obedience", "perseverance"],
+    color: "#4DA8DA"
+  },
+  abraham: {
+    name: "Abraham",
+    backstory: "Father of faith — leaving home for an unknown land at God's call",
+    traits: ["faith", "trust", "covenant"],
+    color: "#A0522D"
+  },
+  jacob: {
+    name: "Jacob",
+    backstory: "The schemer who wrestled with God and was renamed Israel",
+    traits: ["transformation", "perseverance", "humility"],
+    color: "#D4A017"
+  },
+  samson: {
+    name: "Samson",
+    backstory: "Strongest man alive, brought down by his weaknesses, redeemed at the last",
+    traits: ["strength", "vulnerability", "redemption"],
+    color: "#B22222"
+  },
+  samuel: {
+    name: "Samuel",
+    backstory: "The boy who heard God in the night — prophet, judge, kingmaker",
+    traits: ["discernment", "obedience", "courage"],
+    color: "#7B68EE"
+  },
+  job: {
+    name: "Job",
+    backstory: "Losing everything yet refusing to curse God — patience tested to the limit",
+    traits: ["patience", "faith", "endurance"],
+    color: "#8B4513"
+  },
+  isaiah: {
+    name: "Isaiah",
+    backstory: "The prophet who saw the Lord and proclaimed the coming Messiah",
+    traits: ["vision", "boldness", "hope"],
+    color: "#9370DB"
+  },
+  matthew: {
+    name: "Matthew",
+    backstory: "Tax collector turned Gospel writer — from despised to disciple",
+    traits: ["transformation", "diligence", "witness"],
+    color: "#DAA520"
+  },
+  mark: {
+    name: "Mark",
+    backstory: "Young companion of Peter and Paul, recovered from failure to write a Gospel",
+    traits: ["service", "growth", "endurance"],
+    color: "#5F9EA0"
+  },
+  luke: {
+    name: "Luke",
+    backstory: "The beloved physician who carefully recorded the life of Christ and the early church",
+    traits: ["precision", "compassion", "scholarship"],
+    color: "#2E8B57"
+  },
+  john: {
+    name: "John",
+    backstory: "The disciple Jesus loved — eyewitness, theologian of love, exiled to Patmos",
+    traits: ["love", "vision", "faithfulness"],
+    color: "#4682B4"
   }
 };
 

@@ -116,7 +116,18 @@ export default function RPGCharacterSelect({ characters, onSelect, onBack, theol
                    id === "daniel" ? "🙏" :
                    id === "paul" ? "📖" :
                    id === "esther" ? "👸" :
-                   id === "peter" ? "🧑‍🦳" : "✨"}
+                   id === "peter" ? "🧑‍🦳" :
+                   id === "noah" ? "🛟" :
+                   id === "abraham" ? "🌌" :
+                   id === "jacob" ? "🐑" :
+                   id === "samson" ? "💪" :
+                   id === "samuel" ? "📜" :
+                   id === "job" ? "⚖️" :
+                   id === "isaiah" ? "🔥" :
+                   id === "matthew" ? "📚" :
+                   id === "mark" ? "🦁" :
+                   id === "luke" ? "⚕️" :
+                   id === "john" ? "🦅" : "✨"}
                 </div>
                 <h2 className="font-display text-2xl font-bold text-white mb-2">
                   {char.name}
