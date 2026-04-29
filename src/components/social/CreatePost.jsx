@@ -256,9 +256,26 @@ export default function CreatePost({ currentUser, onClose }) {
             {verseSearch && !selectedVerse && (
               <div className="absolute top-full left-0 right-0 mt-2 p-2 bg-card border border-border rounded-lg shadow-lg z-20 max-h-32 overflow-y-auto">
                 <button
-                  onClick={() => {
-                    setSelectedVerse({ reference: verseSearch, text: "Loading verse..." });
+                  onClick={async () => {
+                    const ref = verseSearch.trim();
+                    setSelectedVerse({ reference: ref, text: "Loading verse..." });
                     setVerseSearch("");
+                    try {
+                      const res = await db.functions.invoke("searchBibleText", { query: ref });
+                      const verses = res?.data?.results;
+                      if (Array.isArray(verses) && verses.length > 0) {
+                        const v = verses[0];
+                        const refLabel = `${v.book} ${v.chapter}:${v.verse}`;
+                        const text = verses.length === 1
+                          ? v.text
+                          : verses.map(x => `${x.verse}. ${x.text}`).join(' ');
+                        setSelectedVerse({ reference: refLabel, text });
+                      } else {
+                        setSelectedVerse({ reference: ref, text: "Verse not found." });
+                      }
+                    } catch (err) {
+                      setSelectedVerse({ reference: ref, text: "Could not load verse." });
+                    }
                   }}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition-colors font-body text-xs text-foreground flex items-center gap-2"
                 >
