@@ -3,6 +3,12 @@ import { db } from "@/api/supabaseClient";
 import { Search, Loader2, X } from "lucide-react";
 import { motion } from "framer-motion";
 
+const SUGGESTIONS = [
+  "forgiveness", "love your enemies", "pray", "God is love", "peace I leave with you",
+  "fruit of the Spirit", "the way the truth", "rest for your soul",
+  "John 3:16", "Psalm 23", "Romans 8:28", "Philippians 4:13", "Matthew 6:33",
+];
+
 export default function BibleSearch({ user }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(null);
@@ -14,20 +20,22 @@ export default function BibleSearch({ user }) {
     setLoading(false);
   };
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  const runSearch = async (term) => {
+    const q = (term ?? query).trim();
+    if (!q) return;
     cancelledRef.current = false;
     setLoading(true);
     try {
-      const res = await db.functions.invoke("searchBibleText", {
-        query: query.trim(),
-      });
-      if (!cancelledRef.current) setResults(res.data.results || "No results found");
+      const res = await db.functions.invoke("searchBibleText", { query: q });
+      if (!cancelledRef.current) setResults(res.data ?? { results: [], count: 0 });
     } catch (error) {
-      if (!cancelledRef.current) setResults("Error searching. Please try again.");
+      if (!cancelledRef.current) setResults({ error: "Error searching. Please try again." });
     }
     if (!cancelledRef.current) setLoading(false);
   };
+
+  const handleSearch = () => runSearch();
+  const handleChip = (s) => { setQuery(s); runSearch(s); };
 
   return (
     <motion.div
@@ -65,6 +73,22 @@ export default function BibleSearch({ user }) {
             </button>
           )}
         </div>
+
+        {/* Suggested searches */}
+        <div className="mt-4">
+          <p className="font-body text-xs text-muted-foreground mb-2">Try a topic, phrase, or reference:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => handleChip(s)}
+                className="px-2.5 py-1 text-xs font-body rounded-full border border-border bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Results */}
@@ -74,13 +98,35 @@ export default function BibleSearch({ user }) {
           animate={{ opacity: 1, y: 0 }}
           className="bg-card rounded-xl border border-border p-6 space-y-4"
         >
-          <h3 className="font-display font-bold text-foreground">Relevant Scripture</h3>
-          <div className="font-body text-sm text-foreground/90 leading-relaxed space-y-4 whitespace-pre-wrap">
-            {results}
+          <div className="flex items-center justify-between">
+            <h3 className="font-display font-bold text-foreground">Relevant Scripture</h3>
+            {Array.isArray(results.results) && results.results.length > 0 && (
+              <span className="font-body text-xs text-muted-foreground">
+                Showing {results.count}{results.total && results.total > results.count ? ` of ${results.total}` : ''} {results.mode === 'reference' ? 'verses' : 'matches'}
+              </span>
+            )}
           </div>
+
+          {results.error ? (
+            <p className="font-body text-sm text-destructive">{results.error}</p>
+          ) : !Array.isArray(results.results) || results.results.length === 0 ? (
+            <p className="font-body text-sm text-muted-foreground">No verses found for "{query}".</p>
+          ) : (
+            <div className="space-y-3">
+              {results.results.map((v, i) => (
+                <div key={`${v.book}-${v.chapter}-${v.verse}-${i}`} className="border-l-2 border-accent/50 pl-3">
+                  <p className="font-body text-xs font-semibold text-accent mb-0.5">
+                    {v.book} {v.chapter}:{v.verse}
+                  </p>
+                  <p className="font-body text-sm text-foreground/90 leading-relaxed">{v.text}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
           <button
             onClick={() => setResults(null)}
-            className="mt-4 px-4 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors font-body text-sm"
+            className="mt-2 px-4 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors font-body text-sm"
           >
             Clear
           </button>

@@ -119,7 +119,7 @@ export default function Forums() {
   if (liveSelectedPost) {
     return (
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-background min-h-screen">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <ForumPostDetail
             post={liveSelectedPost}
             user={user}
@@ -135,7 +135,7 @@ export default function Forums() {
       <NewPostBanner />
       {/* Hero */}
       <div className="bg-primary text-primary-foreground pt-20 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <BookOpen className="w-6 h-6 text-accent" />
             <h1 className="font-display text-3xl sm:text-4xl font-bold">
@@ -148,7 +148,7 @@ export default function Forums() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Main tabs */}
         <div className="flex border-b border-border mb-8 overflow-x-auto scrollbar-none">
           {[

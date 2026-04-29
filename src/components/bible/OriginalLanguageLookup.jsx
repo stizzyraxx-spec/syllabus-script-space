@@ -3,6 +3,11 @@ import { db } from "@/api/supabaseClient";
 import { Search, Loader2, BookOpen, X } from "lucide-react";
 import { motion } from "framer-motion";
 
+const SUGGESTIONS = [
+  "love", "grace", "faith", "mercy", "truth", "salvation",
+  "repentance", "covenant", "sin", "eternal", "resurrection",
+];
+
 export default function OriginalLanguageLookup() {
   const [word, setWord] = useState("");
   const [results, setResults] = useState(null);
@@ -11,20 +16,22 @@ export default function OriginalLanguageLookup() {
 
   const handleCancel = () => { cancelledRef.current = true; setLoading(false); };
 
-  const handleSearch = async () => {
-    if (!word.trim()) return;
+  const runSearch = async (term) => {
+    const q = (term ?? word).trim();
+    if (!q) return;
     cancelledRef.current = false;
     setLoading(true);
     try {
-      const res = await db.functions.invoke("getOriginalLanguageWord", {
-        word: word.trim(),
-      });
+      const res = await db.functions.invoke("getOriginalLanguageWord", { word: q });
       if (!cancelledRef.current) setResults(res.data);
     } catch (error) {
       if (!cancelledRef.current) setResults({ error: "Error retrieving original language data. Please try again." });
     }
     if (!cancelledRef.current) setLoading(false);
   };
+
+  const handleSearch = () => runSearch();
+  const handleChip = (s) => { setWord(s); runSearch(s); };
 
   return (
     <motion.div
@@ -59,6 +66,22 @@ export default function OriginalLanguageLookup() {
               <Search className="w-4 h-4" /> Search
             </button>
           )}
+        </div>
+
+        {/* Suggested words */}
+        <div className="mt-4">
+          <p className="font-body text-xs text-muted-foreground mb-2">Try one of these:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => handleChip(s)}
+                className="px-2.5 py-1 text-xs font-body rounded-full border border-border bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

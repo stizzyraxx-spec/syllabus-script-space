@@ -94,3 +94,11 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* Mouse pointer stays default-visible everywhere.
+   Hide the blinking text caret inside inputs / textareas / contenteditable —
+   browsers don't expose a cross-browser way to disable the blink animation,
+   so we hide the caret itself. Selection/typing still works normally. */
+input, textarea, [contenteditable="true"], [contenteditable=""] {
+  caret-color: transparent;
+}

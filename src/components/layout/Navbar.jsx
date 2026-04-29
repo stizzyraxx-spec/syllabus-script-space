@@ -39,13 +39,13 @@ export default function Navbar() {
   }, [location]);
 
   const navLinks = [
-    { label: "Home", path: "/" },
-    { label: "Bible", path: "/bible" },
-    { label: "Explore", path: "/forums" },
-    { label: "Community", path: "/community" },
-    { label: "Games", path: "/games" },
-    { label: "Inventory", path: "/inventory" },
-    { label: "About", path: "/about" },
+    { label: "Home", path: "/", guidance: "The home page — daily devotional, featured verses, and quick links." },
+    { label: "Bible", path: "/bible", guidance: "Read the King James Bible, search verses, look up original languages, save favorites, and write a journal." },
+    { label: "Explore", path: "/forums", guidance: "Forums, current events through Scripture, Bible study tools, and the Did You Know? encyclopedia." },
+    { label: "Community", path: "/community", guidance: "Connect with other believers — feed, group chat, prayer wall, Bible plans, and direct messages." },
+    { label: "Games", path: "/games", guidance: "Bible Trivia, Finish the Verse, Memorization, Spot False Teaching, and more." },
+    { label: "Inventory", path: "/inventory", guidance: "Manage items earned from playing the Condition of Man RPG game." },
+    { label: "About", path: "/about", guidance: "About this ministry, the developer, and the mission." },
   ];
 
   return (
@@ -171,13 +171,6 @@ export default function Navbar() {
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            <div className="flex items-center gap-1.5 text-accent">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-              </span>
-              <span className="font-body text-xs font-medium text-green-400">Live</span>
-            </div>
           </div>
 
           <div className="flex md:hidden items-center gap-1">

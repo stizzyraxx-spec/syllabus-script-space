@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Plus, ChevronDown, ChevronRight, Trash2, Pin, PinOff } from "lucide-react";
+import { X, Plus, ChevronDown, ChevronRight, Trash2, Pin, PinOff, PenTool } from "lucide-react";
+import WhiteboardModal from "./WhiteboardModal";
 
 export default function NotebookModal({ userEmail, onClose }) {
   const queryClient = useQueryClient();
@@ -13,6 +14,8 @@ export default function NotebookModal({ userEmail, onClose }) {
   const [newSubsection, setNewSubsection] = useState("");
   const [noteContent, setNoteContent] = useState("");
   const [editingNote, setEditingNote] = useState(null);
+  const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [noteType, setNoteType] = useState("chapter"); // "chapter" | "reflection"
 
   // Fetch all notes
   const { data: allNotes = [] } = useQuery({
@@ -73,22 +76,26 @@ export default function NotebookModal({ userEmail, onClose }) {
   });
 
   const handleSaveNote = () => {
-    if (!newChapter.trim() || !noteContent.trim()) return;
+    if (!noteContent.trim()) return;
+    // Reflections auto-file under the "Reflections" chapter and skip sub-chapter
+    const effectiveChapter = noteType === "reflection" ? "Reflections" : newChapter.trim();
+    const effectiveSub = noteType === "reflection" ? null : (newSubsection || null);
+    if (!effectiveChapter) return;
 
     if (editingNote) {
       updateNoteMutation.mutate({
         id: editingNote.id,
         data: {
-          chapter_title: newChapter,
-          subsection_title: newSubsection || null,
+          chapter_title: effectiveChapter,
+          subsection_title: effectiveSub,
           content: noteContent,
         },
       });
     } else {
       createNoteMutation.mutate({
         user_email: userEmail,
-        chapter_title: newChapter,
-        subsection_title: newSubsection || null,
+        chapter_title: effectiveChapter,
+        subsection_title: effectiveSub,
         content: noteContent,
       });
     }
@@ -103,13 +110,24 @@ export default function NotebookModal({ userEmail, onClose }) {
     >
       <div className="max-w-4xl w-full py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display text-3xl font-bold text-white">📔 Notebook</h2>
-          <button
-            onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <h2 className="font-display text-3xl font-bold text-white">Notebook</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowWhiteboard(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors text-sm font-semibold"
+              title="Open whiteboard"
+            >
+              <PenTool className="w-4 h-4" />
+              <span className="hidden sm:inline">Whiteboard</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="text-white/60 hover:text-white transition-colors"
+              aria-label="Close notebook"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[70vh]">
@@ -195,29 +213,61 @@ export default function NotebookModal({ userEmail, onClose }) {
           <div className="md:col-span-2 bg-black/90 border border-white/20 rounded-lg p-4 flex flex-col overflow-hidden">
             {showNewNote ? (
               <>
-                <div className="space-y-3 mb-4">
-                  <div>
-                    <label className="text-white/60 text-xs font-semibold">Chapter</label>
-                    <input
-                      type="text"
-                      value={newChapter}
-                      onChange={(e) => setNewChapter(e.target.value)}
-                      placeholder="e.g. Prayer, Scripture Study, Daily Reflections"
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-accent/50"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-white/60 text-xs font-semibold">Sub-Chapter (Optional)</label>
-                    <input
-                      type="text"
-                      value={newSubsection}
-                      onChange={(e) => setNewSubsection(e.target.value)}
-                      placeholder="e.g. Psalm 23, Faith, Morning Prayer"
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-accent/50"
-                    />
-                  </div>
+                {/* Note type toggle */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => setNoteType("chapter")}
+                    className={`flex-1 px-3 py-2 rounded-lg font-body text-sm font-semibold transition-colors ${
+                      noteType === "chapter"
+                        ? "bg-accent text-accent-foreground"
+                        : "border border-white/20 text-white/70 hover:text-white"
+                    }`}
+                  >
+                    Chapter Note
+                  </button>
+                  <button
+                    onClick={() => setNoteType("reflection")}
+                    className={`flex-1 px-3 py-2 rounded-lg font-body text-sm font-semibold transition-colors ${
+                      noteType === "reflection"
+                        ? "bg-accent text-accent-foreground"
+                        : "border border-white/20 text-white/70 hover:text-white"
+                    }`}
+                  >
+                    Quick Reflection
+                  </button>
                 </div>
+
+                {noteType === "chapter" && (
+                  <div className="space-y-3 mb-4">
+                    <div>
+                      <label className="text-white/60 text-xs font-semibold">Chapter</label>
+                      <input
+                        type="text"
+                        value={newChapter}
+                        onChange={(e) => setNewChapter(e.target.value)}
+                        placeholder="e.g. Prayer, Scripture Study, Daily Reflections"
+                        className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-accent/50"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white/60 text-xs font-semibold">Sub-Chapter (Optional)</label>
+                      <input
+                        type="text"
+                        value={newSubsection}
+                        onChange={(e) => setNewSubsection(e.target.value)}
+                        placeholder="e.g. Psalm 23, Faith, Morning Prayer"
+                        className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-accent/50"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {noteType === "reflection" && (
+                  <p className="text-white/50 text-xs mb-3 italic">
+                    Reflections are filed under their own chapter — just write what's on your heart.
+                  </p>
+                )}
 
                 <textarea
                   value={noteContent}
@@ -263,6 +313,12 @@ export default function NotebookModal({ userEmail, onClose }) {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showWhiteboard && (
+          <WhiteboardModal userEmail={userEmail} onClose={() => setShowWhiteboard(false)} />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -3,6 +3,7 @@ import { BookOpen, Search, Lightbulb, ChevronDown, ChevronUp, Send, Loader2, Spa
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
+import { db } from "@/api/supabaseClient";
 
 const tips = [
   {
@@ -121,11 +122,17 @@ function AISearchEngine() {
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: q }]);
     setLoading(true);
-    await new Promise(r => setTimeout(r, 400));
-    setMessages((prev) => [...prev, {
-      role: "assistant",
-      content: "The AI search feature is currently offline. For in-depth Bible research, visit BibleGateway.com, BlueLetterBible.org, or the CCEL (Christian Classics Ethereal Library) at ccel.org for comprehensive scholarly resources.",
-    }]);
+    try {
+      const res = await db.functions.invoke("bibleAiSearch", { question: q });
+      const answer = res?.data?.answer || "I couldn't find an answer. Try rephrasing your question or asking about a specific Bible book or topic.";
+      setMessages((prev) => [...prev, { role: "assistant", content: answer }]);
+    } catch (err) {
+      console.error("bibleAiSearch error:", err);
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: "Sorry — I ran into a problem looking that up. Please try again in a moment.",
+      }]);
+    }
     setLoading(false);
   };
 

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Search, ChevronDown, ChevronUp, MapPin, Scroll, Landmark, FlaskConical, BookOpen, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
+import { EXTRA_ENTRIES } from "./didYouKnowExtraEntries";
 
 const encyclopedia = [
   // MANUSCRIPTS
@@ -380,10 +381,16 @@ function CategorySection({ section }) {
   );
 }
 
+// Merge EXTRA_ENTRIES (keyed by category name) into the encyclopedia structure
+const mergedEncyclopedia = encyclopedia.map((section) => {
+  const extras = EXTRA_ENTRIES[section.category] ?? [];
+  return { ...section, entries: [...section.entries, ...extras] };
+});
+
 export default function DidYouKnow() {
   const [search, setSearch] = useState("");
 
-  const allEntries = encyclopedia.flatMap((s) =>
+  const allEntries = mergedEncyclopedia.flatMap((s) =>
     s.entries.map((e) => ({ ...e, category: s.category, icon: s.icon }))
   );
 
@@ -399,10 +406,10 @@ export default function DidYouKnow() {
     : null;
 
   const stats = [
-    { label: "Archaeological Finds", value: "7", icon: "⛏️", sectionIndex: 1, img: "https://images.unsplash.com/photo-1568209865332-a15790aed756?w=400&q=80" },
-    { label: "Historical Records", value: "5", icon: "🏛️", sectionIndex: 2, img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80" },
-    { label: "Fulfilled Prophecies", value: "4", icon: "🔮", sectionIndex: 3, img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&q=80" },
-    { label: "Ancient Manuscripts", value: "4", icon: "📜", sectionIndex: 0, img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" },
+    { label: "Archaeological Finds", value: String(mergedEncyclopedia[1]?.entries.length ?? 0), icon: "⛏️", sectionIndex: 1, img: "https://images.unsplash.com/photo-1568209865332-a15790aed756?w=400&q=80" },
+    { label: "Historical Records", value: String(mergedEncyclopedia[2]?.entries.length ?? 0), icon: "🏛️", sectionIndex: 2, img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80" },
+    { label: "Fulfilled Prophecies", value: String(mergedEncyclopedia[3]?.entries.length ?? 0), icon: "🔮", sectionIndex: 3, img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&q=80" },
+    { label: "Ancient Manuscripts", value: String(mergedEncyclopedia[0]?.entries.length ?? 0), icon: "📜", sectionIndex: 0, img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" },
   ];
 
   const scrollToSection = (index) => {
@@ -472,7 +479,7 @@ export default function DidYouKnow() {
         </div>
       ) : (
         <div>
-          {encyclopedia.map((section, i) => (
+          {mergedEncyclopedia.map((section, i) => (
             <div key={i} id={`did-you-know-section-${i}`}>
               <CategorySection section={section} />
             </div>

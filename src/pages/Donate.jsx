@@ -6,11 +6,7 @@ import { db } from "@/api/supabaseClient";
 
 const tiers = [];
 
-const impacts = [
-  { emoji: "📚", title: "Educational Content", desc: "Create resources showing Biblical morality" },
-  { emoji: "🌍", title: "Reach More People", desc: "Expand our message globally" },
-  { emoji: "⚖️", title: "Promote Justice", desc: "Advocate for Biblical principles in society" },
-];
+const impacts = [];
 
 export default function Donate() {
   const [customAmount, setCustomAmount] = useState("");
@@ -119,24 +115,24 @@ export default function Donate() {
           </div>
         </motion.div>
 
-        {/* Impact */}
-        <div className="grid sm:grid-cols-3 gap-6">
-          {impacts.map(({ emoji, title, desc }, i) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 + i * 0.08 }}
-              className="flex items-start gap-4 p-6 rounded-xl bg-card border border-border"
-            >
-              <span className="text-2xl">{emoji}</span>
-              <div>
-                <h4 className="font-body font-semibold text-sm text-foreground mb-1.5">{title}</h4>
-                <p className="font-body text-sm text-muted-foreground leading-relaxed">{desc}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* Personal note from the developer */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="p-8 rounded-2xl bg-card border border-border space-y-4"
+        >
+          <h4 className="font-display text-xl font-bold text-foreground">A Note of Thanks</h4>
+          <p className="font-body text-sm text-foreground/85 leading-relaxed">
+            I pour countless hours into building, refining, and updating The Condition of Man — and I do it because this work matters. Every verse loaded, every game polished, every feature shipped is part of a labor of love to put Scripture in front of more people.
+          </p>
+          <p className="font-body text-sm text-foreground/85 leading-relaxed">
+            If you have an idea — a feature you want to see, a bug that bothers you, a tool you wish existed here — please send it through the Help &amp; Support form (the question-mark icon at the top of every page). If it's reasonable, I will build it.
+          </p>
+          <p className="font-body text-sm text-foreground/85 leading-relaxed">
+            And from the bottom of my heart — <span className="text-accent font-semibold">thank you</span>. Whether you give a dollar, share the site with a friend, suggest a feature, or simply read the Word here, you are part of this. I am profoundly grateful for every single one of you. Keep walking with the Lord.
+          </p>
+        </motion.div>
       </div>
     </div>
   );

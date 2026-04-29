@@ -188,13 +188,6 @@ function GameCard({ game, index, onClick, onCopyLink, copied }) {
           <span className="text-[10px] font-body font-black tracking-widest px-2.5 py-1 rounded-full bg-accent text-primary">
             {game.badgeText}
           </span>
-          <motion.span
-            className="text-2xl"
-            animate={hovered ? { rotate: [0, -10, 10, 0], scale: [1, 1.3, 1] } : {}}
-            transition={{ duration: 0.5 }}
-          >
-            {game.emoji}
-          </motion.span>
         </div>
         <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 mb-3">
           <Icon className="w-5 h-5 text-white" />
@@ -329,7 +322,7 @@ export default function GamesHub({ user, searchParams, setSearchParams }) {
             <div className="rounded-2xl overflow-hidden mb-6 bg-gradient-to-r from-primary via-primary/80 to-primary/70 border border-primary/40 p-5">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{game.emoji}</span>
+                  {game.icon && React.createElement(game.icon, { className: "w-7 h-7 text-white" })}
                   <div>
                     <h2 className="font-display text-xl font-bold text-white">{game.label}</h2>
                     <p className="font-body text-xs text-white">{game.tagline}</p>
