@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { db } from "@/api/supabaseClient";
+import { db, supabase } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send, Heart, MessageCircle, Trash2, Archive, Loader2, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,42 +25,99 @@ export default function MultiChannelGroupChat({ currentUser }) {
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
-  const { data: messages = [] } = useQuery({
+  const localKey = `tcom-groupchat-${activeChannel}`;
+  const loadLocal = () => { try { return JSON.parse(localStorage.getItem(localKey) || '[]'); } catch { return []; } };
+  const saveLocal = (arr) => { try { localStorage.setItem(localKey, JSON.stringify(arr.slice(-300))); } catch {} };
+
+  const [localMessages, setLocalMessages] = useState([]);
+  const channelRef = useRef(null);
+
+  // Hydrate from localStorage on channel change
+  useEffect(() => {
+    setLocalMessages(loadLocal());
+  }, [activeChannel]);
+
+  // Subscribe to Realtime broadcast for this channel — works without DB tables
+  useEffect(() => {
+    const channel = supabase
+      .channel(`groupchat:${activeChannel}`, { config: { broadcast: { self: false } } })
+      .on('broadcast', { event: 'message' }, ({ payload }) => {
+        setLocalMessages(prev => {
+          if (prev.some(m => m.id === payload.id)) return prev;
+          const next = [...prev, payload];
+          saveLocal(next);
+          return next;
+        });
+      })
+      .subscribe();
+    channelRef.current = channel;
+    return () => { supabase.removeChannel(channel); };
+  }, [activeChannel]);
+
+  const { data: dbMessages = [] } = useQuery({
     queryKey: ["group-chat-messages", activeChannel],
-    queryFn: () => db.entities.GroupChatMessage.filter({ channel: activeChannel }, "-created_date", 100),
-    refetchInterval: 2000,
+    queryFn: async () => {
+      try { return await db.entities.GroupChatMessage.filter({ channel: activeChannel }, "-created_date", 100); }
+      catch { return []; }
+    },
+    refetchInterval: 5000,
   });
 
-  useEffect(() => {
-    const unsubscribe = db.entities.GroupChatMessage.subscribe((event) => {
-      if (event.data?.channel === activeChannel) {
-        queryClient.invalidateQueries({ queryKey: ["group-chat-messages", activeChannel] });
-      }
-    });
-    return unsubscribe;
-  }, [activeChannel, queryClient]);
+  // Merge DB + local, sorted oldest→newest
+  const byId = new Map();
+  for (const m of dbMessages) byId.set(m.id, m);
+  for (const m of localMessages) if (!byId.has(m.id)) byId.set(m.id, m);
+  const messages = [...byId.values()].sort((a, b) =>
+    new Date(a.created_date || 0) - new Date(b.created_date || 0)
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages.length]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content) => {
       if (!currentUser) return;
-      const userProfile = await db.entities.UserProfile.filter({
-        user_email: currentUser.email,
-      });
-      const profile = userProfile[0];
+      let profile = null;
+      try {
+        const arr = await db.entities.UserProfile.filter({ user_email: currentUser.email });
+        profile = arr?.[0];
+      } catch {}
 
-      await db.entities.GroupChatMessage.create({
+      const msg = {
+        id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         channel: activeChannel,
         author_email: currentUser.email,
-        author_name: profile?.display_name || currentUser.full_name,
+        author_name: profile?.display_name || currentUser.full_name || currentUser.email,
         author_avatar: profile?.avatar_url,
         content,
+        created_date: new Date().toISOString(),
+        liked_by: [],
+        _local: true,
+      };
+
+      // 1) Append locally + persist
+      setLocalMessages(prev => {
+        const next = [...prev, msg];
+        saveLocal(next);
+        return next;
       });
+      // 2) Broadcast over Realtime so all subscribers see it instantly
+      if (channelRef.current) {
+        try { await channelRef.current.send({ type: 'broadcast', event: 'message', payload: msg }); } catch {}
+      }
+      // 3) Best-effort DB write
+      try {
+        await db.entities.GroupChatMessage.create({
+          channel: activeChannel,
+          author_email: currentUser.email,
+          author_name: profile?.display_name || currentUser.full_name,
+          author_avatar: profile?.avatar_url,
+          content,
+        });
+      } catch {}
     },
-    onSuccess: () => {
+    onSettled: () => {
       setMessage("");
       queryClient.invalidateQueries({ queryKey: ["group-chat-messages", activeChannel] });
     },

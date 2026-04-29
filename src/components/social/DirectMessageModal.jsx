@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { db } from "@/api/supabaseClient";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { db, supabase } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Send, Loader2 } from "lucide-react";
 import { format } from "date-fns";
@@ -10,45 +10,110 @@ function makeConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join("__");
 }
 
+function loadLocal(convoId) {
+  try { return JSON.parse(localStorage.getItem(`tcom-dm-${convoId}`) || '[]'); } catch { return []; }
+}
+function saveLocal(convoId, messages) {
+  try { localStorage.setItem(`tcom-dm-${convoId}`, JSON.stringify(messages.slice(-200))); } catch {}
+}
+
 export default function DirectMessageModal({ currentUser, recipientEmail, recipientName, recipientAvatar, onClose }) {
   const [newMessage, setNewMessage] = useState("");
+  const [localMessages, setLocalMessages] = useState([]);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const inputRef = useRef(null);
-
-  const { data: recipientProfile } = useQuery({
-    queryKey: ["user-profile", recipientEmail],
-    queryFn: () => db.entities.UserProfile.filter({ user_email: recipientEmail }),
-    select: (data) => data[0],
-  });
+  const channelRef = useRef(null);
 
   const convoId = makeConversationId(currentUser.email, recipientEmail);
 
-  const { data: convoMessages = [] } = useQuery({
+  const { data: recipientProfile } = useQuery({
+    queryKey: ["user-profile", recipientEmail],
+    queryFn: async () => {
+      try { return await db.entities.UserProfile.filter({ user_email: recipientEmail }); }
+      catch { return []; }
+    },
+    select: (data) => data?.[0],
+  });
+
+  // Pull DB messages (best effort) and merge with local ones
+  const { data: dbMessages = [] } = useQuery({
     queryKey: ["convo", convoId],
-    queryFn: () =>
-      db.entities.DirectMessage.filter({ conversation_id: convoId }, "created_date", 100),
+    queryFn: async () => {
+      try { return await db.entities.DirectMessage.filter({ conversation_id: convoId }, "created_date", 100); }
+      catch { return []; }
+    },
     refetchInterval: 3000,
   });
 
+  // On mount, hydrate from localStorage
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [convoMessages]);
+    setLocalMessages(loadLocal(convoId));
+  }, [convoId]);
 
+  // Realtime subscription — receive messages from the other user live
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    const channel = supabase
+      .channel(`dm:${convoId}`, { config: { broadcast: { self: false } } })
+      .on('broadcast', { event: 'message' }, ({ payload }) => {
+        setLocalMessages(prev => {
+          const next = [...prev, payload];
+          saveLocal(convoId, next);
+          return next;
+        });
+      })
+      .subscribe();
+    channelRef.current = channel;
+    return () => { supabase.removeChannel(channel); };
+  }, [convoId]);
+
+  // Merge DB + local, dedupe by id, sort by created_date
+  const allMessagesById = new Map();
+  for (const m of dbMessages) allMessagesById.set(m.id, m);
+  for (const m of localMessages) if (!allMessagesById.has(m.id)) allMessagesById.set(m.id, m);
+  const convoMessages = [...allMessagesById.values()].sort((a, b) =>
+    new Date(a.created_date || 0) - new Date(b.created_date || 0)
+  );
+
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [convoMessages.length]);
+  useEffect(() => { inputRef.current?.focus(); }, []);
 
   const sendMutation = useMutation({
-    mutationFn: () =>
-      db.entities.DirectMessage.create({
+    mutationFn: async () => {
+      const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const msg = {
+        id,
         from_email: currentUser.email,
         to_email: recipientEmail,
         content: newMessage,
         conversation_id: convoId,
+        created_date: new Date().toISOString(),
         read: false,
-      }),
-    onSuccess: () => {
+        _local: true,
+      };
+      // 1) Append to local + persist
+      setLocalMessages(prev => {
+        const next = [...prev, msg];
+        saveLocal(convoId, next);
+        return next;
+      });
+      // 2) Broadcast over Realtime so the recipient receives it instantly
+      if (channelRef.current) {
+        try { await channelRef.current.send({ type: 'broadcast', event: 'message', payload: msg }); } catch {}
+      }
+      // 3) Best-effort DB write (works once direct_messages table is provisioned)
+      try {
+        await db.entities.DirectMessage.create({
+          from_email: currentUser.email,
+          to_email: recipientEmail,
+          content: newMessage,
+          conversation_id: convoId,
+          read: false,
+        });
+      } catch {}
+      return msg;
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["convo", convoId] });
       queryClient.invalidateQueries({ queryKey: ["dms-sent", currentUser.email] });
       setNewMessage("");
@@ -84,10 +149,7 @@ export default function DirectMessageModal({ currentUser, recipientEmail, recipi
             {recipientName || recipientEmail}
           </span>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 rounded-lg text-primary-foreground/60 hover:text-primary-foreground transition-colors"
-        >
+        <button onClick={onClose} className="p-1 rounded-lg text-primary-foreground/60 hover:text-primary-foreground transition-colors">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -116,13 +178,9 @@ export default function DirectMessageModal({ currentUser, recipientEmail, recipi
                   <span>{(recipientName || recipientEmail || "U")[0].toUpperCase()}</span>
                 )}
               </div>
-              <div
-                className={`max-w-[80%] px-3 py-2 rounded-2xl font-body text-sm leading-relaxed ${
-                  isMe
-                    ? "bg-accent text-accent-foreground rounded-br-sm"
-                    : "bg-secondary text-foreground rounded-bl-sm"
-                }`}
-              >
+              <div className={`max-w-[80%] px-3 py-2 rounded-2xl font-body text-sm leading-relaxed ${
+                isMe ? "bg-accent text-accent-foreground rounded-br-sm" : "bg-secondary text-foreground rounded-bl-sm"
+              }`}>
                 {msg.content}
                 <p className={`text-[10px] mt-0.5 ${isMe ? "text-accent-foreground/60" : "text-muted-foreground"}`}>
                   {msg.created_date ? format(new Date(msg.created_date), "h:mm a") : ""}
@@ -149,11 +207,7 @@ export default function DirectMessageModal({ currentUser, recipientEmail, recipi
           disabled={sendMutation.isPending || !newMessage.trim()}
           className="w-9 h-9 flex items-center justify-center bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50 flex-shrink-0"
         >
-          {sendMutation.isPending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
+          {sendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         </button>
       </div>
     </motion.div>
