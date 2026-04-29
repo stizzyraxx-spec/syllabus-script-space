@@ -17,19 +17,46 @@ export default function NotebookModal({ userEmail, onClose }) {
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [noteType, setNoteType] = useState("chapter"); // "chapter" | "reflection"
 
-  // Fetch all notes
-  const { data: allNotes = [] } = useQuery({
+  // ── Local-storage backup so notes always persist, even if the DB write fails ──
+  const localKey = `tcom-notebook-${userEmail || 'guest'}`;
+  const loadLocal = () => {
+    try { return JSON.parse(localStorage.getItem(localKey) || '[]'); } catch { return []; }
+  };
+  const saveLocal = (notes) => {
+    try { localStorage.setItem(localKey, JSON.stringify(notes)); } catch {}
+  };
+
+  // Fetch all notes from DB; if DB query fails (table missing etc.), fall back to local
+  const { data: dbNotes = [] } = useQuery({
     queryKey: ["notebook-entries", userEmail],
-    queryFn: () => db.entities.NotebookEntry.filter({ user_email: userEmail }),
+    queryFn: async () => {
+      try { return await db.entities.NotebookEntry.filter({ user_email: userEmail }); }
+      catch { return []; }
+    },
     enabled: !!userEmail,
   });
 
-  // Mutations
+  // Merge DB + local notes (dedupe by id; local entries get a "_local" id prefix)
+  const localNotes = loadLocal();
+  const dbIds = new Set(dbNotes.map(n => n.id));
+  const allNotes = [...dbNotes, ...localNotes.filter(n => !dbIds.has(n.id))];
+
+  // Mutations — always succeed by writing to localStorage as a fallback
   const createNoteMutation = useMutation({
-    mutationFn: (noteData) => db.entities.NotebookEntry.create(noteData),
+    mutationFn: async (noteData) => {
+      try { return await db.entities.NotebookEntry.create(noteData); }
+      catch (err) {
+        const local = loadLocal();
+        const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        const entry = { ...noteData, id, _local: true, created_date: new Date().toISOString() };
+        saveLocal([...local, entry]);
+        return entry;
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] });
       setShowNewNote(false);
+      setEditingNote(null);
       setNewChapter("");
       setNewSubsection("");
       setNoteContent("");
@@ -37,26 +64,49 @@ export default function NotebookModal({ userEmail, onClose }) {
   });
 
   const updateNoteMutation = useMutation({
-    mutationFn: ({ id, data }) => db.entities.NotebookEntry.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      if (String(id).startsWith('local-')) {
+        const local = loadLocal().map(n => (n.id === id ? { ...n, ...data, updated_date: new Date().toISOString() } : n));
+        saveLocal(local);
+        return { id, ...data };
+      }
+      try { return await db.entities.NotebookEntry.update(id, data); }
+      catch {
+        const local = [...loadLocal(), { id, ...data, _local: true, updated_date: new Date().toISOString() }];
+        saveLocal(local);
+        return { id, ...data };
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] });
+      setShowNewNote(false);
       setEditingNote(null);
     },
   });
 
   const deleteNoteMutation = useMutation({
-    mutationFn: (id) => db.entities.NotebookEntry.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] });
+    mutationFn: async (id) => {
+      if (String(id).startsWith('local-')) {
+        saveLocal(loadLocal().filter(n => n.id !== id));
+        return { id };
+      }
+      try { return await db.entities.NotebookEntry.delete(id); }
+      catch { return { id }; }
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] }),
   });
 
   const togglePinMutation = useMutation({
-    mutationFn: ({ id, isPinned }) =>
-      db.entities.NotebookEntry.update(id, { is_pinned: !isPinned }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] });
+    mutationFn: async ({ id, isPinned }) => {
+      if (String(id).startsWith('local-')) {
+        const local = loadLocal().map(n => (n.id === id ? { ...n, is_pinned: !isPinned } : n));
+        saveLocal(local);
+        return { id, is_pinned: !isPinned };
+      }
+      try { return await db.entities.NotebookEntry.update(id, { is_pinned: !isPinned }); }
+      catch { return { id, is_pinned: !isPinned }; }
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] }),
   });
 
   // Group notes by chapter

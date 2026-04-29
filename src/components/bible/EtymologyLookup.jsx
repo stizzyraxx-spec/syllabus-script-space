@@ -4,10 +4,14 @@ import { Search, Loader2, BookOpen, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 const SUGGESTIONS = [
-  "gospel", "blessing", "salvation", "mercy", "grace", "faith",
-  "prayer", "holy", "righteousness", "sin", "hope", "charity",
-  "glory", "prophet", "apostle", "baptism", "sabbath", "covenant",
-  "worship", "amen", "hosanna", "shalom",
+  "bible", "gospel", "christ", "christian", "church", "messiah", "savior", "lord",
+  "trinity", "creation", "salvation", "redemption", "repentance", "atonement",
+  "blessing", "grace", "mercy", "faith", "hope", "charity", "love",
+  "prayer", "worship", "holy", "righteousness", "sin", "glory",
+  "prophet", "apostle", "disciple", "evangelist",
+  "baptism", "sabbath", "sacrament", "covenant", "testament",
+  "angel", "demon", "spirit", "soul", "heaven", "hell", "kingdom",
+  "amen", "hosanna", "shalom",
 ];
 
 export default function EtymologyLookup() {
