@@ -164,7 +164,7 @@ export default function NotebookModal({ userEmail, onClose }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowWhiteboard(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors text-sm font-semibold"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90 transition-colors text-sm font-semibold"
               title="Open whiteboard"
             >
               <PenTool className="w-4 h-4" />
