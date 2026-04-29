@@ -16,7 +16,6 @@ export default function CompleteProfileModal({ currentUser, onClose }) {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const existing = await db.entities.UserProfile.filter({ user_email: currentUser.email });
       const data = {
         user_email: currentUser.email,
         display_name: form.display_name,
@@ -26,18 +25,35 @@ export default function CompleteProfileModal({ currentUser, onClose }) {
         following: [],
         post_count: 0,
       };
-      if (existing.length > 0) {
-        await db.entities.UserProfile.update(existing[0].id, data);
-      } else {
-        await db.entities.UserProfile.create(data);
+      // Always cache to localStorage first so the user's edit is never lost,
+      // even if the database write fails (e.g. user_profiles table not yet
+      // applied in Supabase).
+      try {
+        localStorage.setItem(`tcom-profile-${currentUser.email}`, JSON.stringify({ ...data, savedAt: new Date().toISOString() }));
+      } catch {}
+
+      // Try DB; swallow errors so the modal still closes
+      try {
+        const existing = await db.entities.UserProfile.filter({ user_email: currentUser.email });
+        if (existing.length > 0) {
+          await db.entities.UserProfile.update(existing[0].id, data);
+        } else {
+          await db.entities.UserProfile.create(data);
+        }
+      } catch (err) {
+        console.warn("UserProfile DB save failed; kept local copy:", err?.message);
       }
-      // Backfill existing posts with updated name
-      const myPosts = await db.entities.CommunityPost.filter({ author_email: currentUser.email });
-      await Promise.all(myPosts.map((p) =>
-        db.entities.CommunityPost.update(p.id, { author_name: form.display_name })
-      ));
+
+      // Backfill posts (best effort)
+      try {
+        const myPosts = await db.entities.CommunityPost.filter({ author_email: currentUser.email });
+        await Promise.all(myPosts.map((p) =>
+          db.entities.CommunityPost.update(p.id, { author_name: form.display_name }).catch(() => null)
+        ));
+      } catch {}
     },
-    onSuccess: () => {
+    // Both onSuccess and onError close — saving never blocks the user.
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["profile", currentUser.email] });
       onClose();
     },
