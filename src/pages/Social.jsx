@@ -33,11 +33,25 @@ export default function Social() {
       if (isAuthed) {
         const me = await db.auth.me();
         setUser(me);
-        // Check if this user has a profile yet — if not, prompt them
-        const profiles = await db.entities.UserProfile.filter({ user_email: me.email });
-        if (profiles.length === 0) {
-          setShowCompleteProfile(true);
+
+        // Only show the "complete profile" prompt if the user has neither
+        // saved a profile (DB or local cache) nor explicitly skipped it.
+        const localProfile = (() => {
+          try { return localStorage.getItem(`tcom-profile-${me.email}`); } catch { return null; }
+        })();
+        const skipped = (() => {
+          try { return localStorage.getItem(`tcom-profile-skipped-${me.email}`); } catch { return null; }
+        })();
+
+        if (!localProfile && !skipped) {
+          // Try DB; if the query throws (table missing) treat it as "no profile yet"
+          let dbProfiles = [];
+          try { dbProfiles = await db.entities.UserProfile.filter({ user_email: me.email }); } catch {}
+          if (dbProfiles.length === 0) {
+            setShowCompleteProfile(true);
+          }
         }
+
         // Check if we should navigate to a specific profile (from notifications)
         const profileEmail = sessionStorage.getItem("viewProfileEmail");
         if (profileEmail) {

@@ -130,7 +130,11 @@ export default function CompleteProfileModal({ currentUser, onClose }) {
 
           <div className="flex gap-3 pt-2">
             <button
-              onClick={onClose}
+              onClick={() => {
+                // Remember the skip so the prompt doesn't reopen on every Community visit
+                try { localStorage.setItem(`tcom-profile-skipped-${currentUser?.email}`, '1'); } catch {}
+                onClose();
+              }}
               className="flex-1 font-body text-sm text-muted-foreground border border-border hover:border-accent/40 py-2.5 rounded-lg transition-colors"
             >
               Skip for now
