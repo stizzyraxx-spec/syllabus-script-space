@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Compass } from "lucide-react";
 
@@ -12,9 +12,9 @@ export default function Discovery() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const currentUser = await base44.auth.me();
+        const currentUser = await db.auth.me();
         setUser(currentUser);
       }
       setLoading(false);
@@ -25,7 +25,7 @@ export default function Discovery() {
     queryKey: ["profile", user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.UserProfile.filter({ user_email: user.email }).then((data) => data[0])
+        ? db.entities.UserProfile.filter({ user_email: user.email }).then((data) => data[0])
         : Promise.resolve(null),
     enabled: !!user?.email,
   });
@@ -78,7 +78,7 @@ export default function Discovery() {
                   Sign in to get personalized recommendations
                 </p>
                 <button
-                  onClick={() => base44.auth.redirectToLogin()}
+                  onClick={() => db.auth.redirectToLogin()}
                   className="px-4 py-2 rounded-lg bg-accent text-accent-foreground font-body text-sm font-semibold hover:bg-accent/90 transition-colors"
                 >
                   Sign In

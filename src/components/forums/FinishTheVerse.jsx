@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { Loader2, BookOpen, CheckCircle2, XCircle, RefreshCw, ChevronRight, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAwardPoints } from "@/hooks/useAwardPoints";
@@ -25,9 +25,9 @@ export default function FinishTheVerse() {
 
   const saveScore = useCallback(async () => {
     try {
-      const user = await base44.auth.me();
+      const user = await db.auth.me();
       if (user) {
-        await base44.entities.GameScore.create({
+        await db.entities.GameScore.create({
           player_email: user.email,
           player_name: user.full_name,
           game_type: "finish_verse",
@@ -48,7 +48,7 @@ export default function FinishTheVerse() {
     setSelected(null);
 
     try {
-      const res = await base44.functions.invoke("generateFinishVerseQuestion", {
+      const res = await db.functions.invoke("generateFinishVerseQuestion", {
         difficulty,
         book,
         count: 1,
@@ -97,7 +97,7 @@ export default function FinishTheVerse() {
     if (selected === round.correct_index) {
       setScore((s) => s + 1);
       setStreak((s) => s + 1);
-      const user = await base44.auth.me().catch(() => null);
+      const user = await db.auth.me().catch(() => null);
       if (user) {
         await awardPoints(user.email, "verse");
         toast.success("✨ +1 point for correct answer!");

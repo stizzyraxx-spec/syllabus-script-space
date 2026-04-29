@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, Heart, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 export default function TrendingSection() {
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["trending-posts"],
-    queryFn: () => base44.entities.CommunityPost.list("-likes", 20),
+    queryFn: () => db.entities.CommunityPost.list("-likes", 20),
   });
 
   const trendingTopics = posts.reduce((acc, post) => {

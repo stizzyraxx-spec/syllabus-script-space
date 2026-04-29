@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { X, Trophy, Zap, Target, Star } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,12 +8,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function FriendProfileModal({ email, onClose, currentUserEmail }) {
   const { data: friendProfile } = useQuery({
     queryKey: ["friend-profile", email],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: email }).then((d) => d[0]),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: email }).then((d) => d[0]),
   });
 
   const { data: friendScores = [] } = useQuery({
     queryKey: ["friend-scores", email],
-    queryFn: () => base44.entities.GameScore.filter({ player_email: email }, "-created_date", 50),
+    queryFn: () => db.entities.GameScore.filter({ player_email: email }, "-created_date", 50),
   });
 
   const timelineData = friendScores

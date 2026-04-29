@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { MouseProvider } from "@/lib/MouseContext";
@@ -71,7 +71,7 @@ export default function RPGGame({ userEmail }) {
       // First try to load from database
       if (selectedCharacter && userEmail) {
         try {
-          const existing = await base44.entities.RPGPlayerProgress.filter({
+          const existing = await db.entities.RPGPlayerProgress.filter({
             player_email: userEmail,
             character_id: selectedCharacter,
           });
@@ -98,7 +98,7 @@ export default function RPGGame({ userEmail }) {
     
     try {
       // Check if progress exists in database
-      const existing = await base44.entities.RPGPlayerProgress.filter({
+      const existing = await db.entities.RPGPlayerProgress.filter({
         player_email: userEmail,
         character_id: charId,
       });
@@ -109,7 +109,7 @@ export default function RPGGame({ userEmail }) {
         sessionStorage.setItem(`rpg_progress_${charId}`, JSON.stringify(existing[0]));
       } else {
         // Create new progress record
-        const newProgress = await base44.entities.RPGPlayerProgress.create({
+        const newProgress = await db.entities.RPGPlayerProgress.create({
           player_email: userEmail,
           character_id: charId,
           level: 1,
@@ -181,7 +181,7 @@ export default function RPGGame({ userEmail }) {
     // Save to database if ID exists
     if (playerProgress?.id) {
       try {
-        await base44.entities.RPGPlayerProgress.update(playerProgress.id, updated);
+        await db.entities.RPGPlayerProgress.update(playerProgress.id, updated);
       } catch (err) {
         console.error("Failed to save mission complete:", err);
       }
@@ -189,7 +189,7 @@ export default function RPGGame({ userEmail }) {
     
     // Save score to leaderboard after every mission
     try {
-      await base44.entities.RPGLeaderboard.create({
+      await db.entities.RPGLeaderboard.create({
         session_id: sessionId,
         character_id: selectedCharacter,
         final_score: updated.total_score,

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, User, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -16,7 +16,7 @@ export default function CompleteProfileModal({ currentUser, onClose }) {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const existing = await base44.entities.UserProfile.filter({ user_email: currentUser.email });
+      const existing = await db.entities.UserProfile.filter({ user_email: currentUser.email });
       const data = {
         user_email: currentUser.email,
         display_name: form.display_name,
@@ -27,14 +27,14 @@ export default function CompleteProfileModal({ currentUser, onClose }) {
         post_count: 0,
       };
       if (existing.length > 0) {
-        await base44.entities.UserProfile.update(existing[0].id, data);
+        await db.entities.UserProfile.update(existing[0].id, data);
       } else {
-        await base44.entities.UserProfile.create(data);
+        await db.entities.UserProfile.create(data);
       }
       // Backfill existing posts with updated name
-      const myPosts = await base44.entities.CommunityPost.filter({ author_email: currentUser.email });
+      const myPosts = await db.entities.CommunityPost.filter({ author_email: currentUser.email });
       await Promise.all(myPosts.map((p) =>
-        base44.entities.CommunityPost.update(p.id, { author_name: form.display_name })
+        db.entities.CommunityPost.update(p.id, { author_name: form.display_name })
       ));
     },
     onSuccess: () => {

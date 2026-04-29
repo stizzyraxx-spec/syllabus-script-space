@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Play, Pause, Square, X, Headphones, Loader2, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 export default function BibleAudioPlayer({ book, chapter }) {
   const [visible, setVisible] = useState(false);
@@ -50,7 +50,7 @@ export default function BibleAudioPlayer({ book, chapter }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke("getBibleVerses", { book, chapter });
+      const res = await db.functions.invoke("getBibleVerses", { book, chapter });
       const v = res.data?.verses || [];
       if (!v.length) throw new Error("No verses found");
       setVerses(v);

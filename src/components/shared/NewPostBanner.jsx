@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageSquare, X } from "lucide-react";
 
@@ -10,11 +10,11 @@ export default function NewPostBanner({ onOpenPost }) {
 
   useEffect(() => {
     // Pre-seed existing post IDs so we don't show banners for old posts
-    base44.entities.ForumPost.list("-created_date", 50).then((posts) => {
+    db.entities.ForumPost.list("-created_date", 50).then((posts) => {
       posts.forEach((p) => seenIds.current.add(p.id));
     });
 
-    const unsubscribe = base44.entities.ForumPost.subscribe((event) => {
+    const unsubscribe = db.entities.ForumPost.subscribe((event) => {
       if (event.type === "create" && !seenIds.current.has(event.id)) {
         seenIds.current.add(event.id);
         const post = event.data;

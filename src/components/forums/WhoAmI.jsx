@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { Loader2, CheckCircle2, XCircle, RefreshCw, ChevronRight, Users, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAwardPoints } from "@/hooks/useAwardPoints";
@@ -37,7 +37,7 @@ export default function WhoAmI({ user }) {
     setUsedHints(new Set());
 
     try {
-      const res = await base44.functions.invoke("generateWhoAmIQuestions", {
+      const res = await db.functions.invoke("generateWhoAmIQuestions", {
         count: questionCount,
         difficulty,
       });
@@ -95,9 +95,9 @@ export default function WhoAmI({ user }) {
 
   const saveScore = async (finalScore) => {
     try {
-      const currentUser = await base44.auth.me();
+      const currentUser = await db.auth.me();
       if (currentUser) {
-        await base44.entities.GameScore.create({
+        await db.entities.GameScore.create({
           player_email: currentUser.email,
           player_name: currentUser.full_name,
           game_type: "who_am_i",

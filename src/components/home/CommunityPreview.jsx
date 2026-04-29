@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Heart, MessageSquare, Send, Loader2 } from "lucide-react";
@@ -14,9 +14,9 @@ export default function CommunityPreview() {
   const [newPost, setNewPost] = useState({ title: "", content: "" });
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
       }
     });
@@ -26,11 +26,11 @@ export default function CommunityPreview() {
 
   const { data: posts = [] } = useQuery({
     queryKey: ["community-posts"],
-    queryFn: () => base44.entities.ForumPost.list("-created_date", 5),
+    queryFn: () => db.entities.ForumPost.list("-created_date", 5),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.ForumPost.create(data),
+    mutationFn: (data) => db.entities.ForumPost.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-posts"] });
       setNewPost({ title: "", content: "" });
@@ -42,7 +42,7 @@ export default function CommunityPreview() {
     mutationFn: async (post) => {
       const likedBy = post.liked_by || [];
       const alreadyLiked = likedBy.includes(user?.email);
-      return base44.entities.ForumPost.update(post.id, {
+      return db.entities.ForumPost.update(post.id, {
         likes: alreadyLiked ? (post.likes || 1) - 1 : (post.likes || 0) + 1,
         liked_by: alreadyLiked
           ? likedBy.filter((e) => e !== user?.email)
@@ -136,7 +136,7 @@ export default function CommunityPreview() {
               our community.
             </p>
             <button
-              onClick={() => base44.auth.redirectToLogin()}
+              onClick={() => db.auth.redirectToLogin()}
               className="inline-flex items-center font-body px-5 py-2.5 bg-accent text-accent-foreground rounded-lg text-sm font-semibold hover:bg-accent/90 transition-colors"
             >
               Sign In / Create Account

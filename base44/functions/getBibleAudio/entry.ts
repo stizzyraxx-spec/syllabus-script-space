@@ -1,5 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-
 const API_KEY = Deno.env.get("BIBLE_API_KEY");
 const BASE_URL = "https://rest.api.bible/v1";
 

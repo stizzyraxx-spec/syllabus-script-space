@@ -1,4 +1,8 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FIRST_NAMES = [
   "James", "Robert", "Michael", "William", "David", "Richard", "Joseph", "Thomas", "Charles", "Christopher",
@@ -49,12 +53,17 @@ const BIBLE_VERSES = [
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
 
-    if (user?.role !== 'admin') {
+    if (!user || user.user_metadata?.role !== 'admin') {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Generate 400 realistic profiles with posts
     const profiles = [];
@@ -96,13 +105,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Bulk create profiles
     console.log(`Creating ${profiles.length} UserProfile records...`);
-    await base44.asServiceRole.entities.UserProfile.bulkCreate(profiles);
+    await supabase.from('user_profiles').insert(profiles);
 
-    // Bulk create posts
     console.log(`Creating ${posts.length} CommunityPost records...`);
-    await base44.asServiceRole.entities.CommunityPost.bulkCreate(posts);
+    await supabase.from('community_posts').insert(posts);
 
     return Response.json({
       success: true,

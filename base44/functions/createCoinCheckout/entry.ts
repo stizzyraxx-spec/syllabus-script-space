@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@14.15.0';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
@@ -35,7 +34,6 @@ Deno.serve(async (req) => {
       success_url: `${req.headers.get("origin")}/games?game=rpg&coins_success=true`,
       cancel_url: `${req.headers.get("origin")}/games?game=rpg`,
       metadata: {
-        base44_app_id: Deno.env.get("BASE44_APP_ID"),
         player_email: playerEmail,
         coins: pkg.coins,
         package_id: packageId,

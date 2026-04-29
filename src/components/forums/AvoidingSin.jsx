@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RefreshCw, Volume2, VolumeX } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 // Characters to choose from
 const CHARACTERS = [
@@ -52,12 +52,12 @@ export default function AvoidingSin() {
   // Save score when game ends
   useEffect(() => {
     if (gameState !== "game-over" || score === 0) return;
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (!authed) return;
       try {
-        const user = await base44.auth.me();
+        const user = await db.auth.me();
         if (user) {
-          await base44.entities.GameScore.create({
+          await db.entities.GameScore.create({
             player_email: user.email,
             player_name: user.full_name,
             game_type: "avoiding_sin",

@@ -1,4 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 const VERSES = [
   { book: "John", chapter: 3, verse: 16, text: "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life." },
@@ -11,47 +16,36 @@ const VERSES = [
   { book: "1 Peter", chapter: 5, verse: 7, text: "Casting all your care upon him; for he careth for you." },
   { book: "Jeremiah", chapter: 29, verse: 11, text: "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end." },
   { book: "Matthew", chapter: 11, verse: 28, text: "Come unto me, all ye that labour and are heavy laden, and I will give you rest." },
-  { book: "Psalms", chapter: 27, verse: 10, text: "When my father and my mother forsake me, then the LORD will take me up." },
-  { book: "1 John", chapter: 4, verse: 7, text: "Beloved, let us love one another: for love is of God; and every one that loveth is born of God, and knoweth God." },
-  { book: "Joshua", chapter: 1, verse: 9, text: "Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest." },
-  { book: "Psalms", chapter: 46, verse: 5, text: "God is in the midst of her; she shall not be moved: God shall help her, and that right early." },
-  { book: "Proverbs", chapter: 22, verse: 17, text: "Bow down thine ear, and hear the words of the wise, and apply thine heart unto my knowledge." }
 ];
 
-Deno.serve(async (req) => {
+Deno.serve(async (_req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    
-    // Get all users with daily verse enabled
-    const users = await base44.asServiceRole.entities.UserProfile.filter({ daily_verse_enabled: true });
-    
-    if (users.length === 0) {
+    const { data: users } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('daily_verse_enabled', true);
+
+    if (!users || users.length === 0) {
       return Response.json({ message: "No users subscribed" }, { status: 200 });
     }
 
     const randomVerse = VERSES[Math.floor(Math.random() * VERSES.length)];
-    let successCount = 0;
-    let errors = [];
+    const verseRef = `${randomVerse.book} ${randomVerse.chapter}:${randomVerse.verse}`;
 
-    for (const user of users) {
-      try {
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: user.user_email,
-          subject: `Daily Encouragement: ${randomVerse.book} ${randomVerse.chapter}:${randomVerse.verse}`,
-          body: `Good morning,\n\nHere's today's encouraging verse for you:\n\n"${randomVerse.text}"\n\n— ${randomVerse.book} ${randomVerse.chapter}:${randomVerse.verse} (KJV)\n\nMay this verse bless and strengthen you today!\n\nBest regards,\nThe Condition of Man`,
-          from_name: "The Condition of Man"
-        });
-        successCount++;
-      } catch (err) {
-        errors.push({ email: user.user_email, error: err.message });
-        console.error(`Failed to send verse to ${user.user_email}:`, err.message);
-      }
-    }
+    const notifications = users.map((u) => ({
+      recipient_email: u.user_email,
+      type: "daily_verse",
+      message: `Daily Verse: "${randomVerse.text}" — ${verseRef}`,
+      link_path: "/bible",
+      read: false,
+    }));
 
-    return Response.json({ 
-      message: `Sent ${successCount} daily verses`,
+    await supabase.from('notifications').insert(notifications);
+
+    console.log(`Sent daily verse notifications to ${notifications.length} users`);
+    return Response.json({
+      message: `Sent ${notifications.length} daily verses`,
       total: users.length,
-      errors: errors.length > 0 ? errors : null
     }, { status: 200 });
   } catch (error) {
     console.error("Error in sendDailyVerse:", error.message);

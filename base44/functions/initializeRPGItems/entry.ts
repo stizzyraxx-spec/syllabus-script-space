@@ -1,13 +1,16 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
-Deno.serve(async (req) => {
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
+Deno.serve(async (_req) => {
   try {
-    const base44 = createClientFromRequest(req);
-
-    // Check if items already exist
-    const existing = await base44.entities.RPGItem.list();
+    const { data: existing } = await supabase.from('rpg_items').select('id').limit(1);
     if (existing && existing.length > 0) {
-      return Response.json({ message: "Items already initialized", count: existing.length });
+      const { count } = await supabase.from('rpg_items').select('*', { count: 'exact', head: true });
+      return Response.json({ message: "Items already initialized", count });
     }
 
     const ITEMS = [
@@ -184,8 +187,8 @@ Deno.serve(async (req) => {
       },
     ];
 
-    const created = await base44.entities.RPGItem.bulkCreate(ITEMS);
-    return Response.json({ message: "Items initialized", count: created.length });
+    const { data: created } = await supabase.from('rpg_items').insert(ITEMS).select();
+    return Response.json({ message: "Items initialized", count: created?.length ?? 0 });
   } catch (error) {
     console.error("Error initializing items:", error.message);
     return Response.json({ error: error.message }, { status: 500 });

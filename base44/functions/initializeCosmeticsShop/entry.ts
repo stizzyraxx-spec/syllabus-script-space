@@ -1,4 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 const INITIAL_COSMETICS = [
   {
@@ -83,24 +88,20 @@ const INITIAL_COSMETICS = [
   },
 ];
 
-Deno.serve(async (req) => {
+Deno.serve(async (_req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    
-    // Check if cosmetics already exist
-    const existing = await base44.asServiceRole.entities.CosmeticItem.list();
-    if (existing.length > 0) {
-      return Response.json({ message: 'Cosmetics already initialized', count: existing.length });
+    const { data: existing } = await supabase.from('cosmetic_items').select('id').limit(1);
+    if (existing && existing.length > 0) {
+      const { count } = await supabase.from('cosmetic_items').select('*', { count: 'exact', head: true });
+      return Response.json({ message: 'Cosmetics already initialized', count });
     }
 
-    // Create all initial cosmetics
-    const created = [];
-    for (const cosmetic of INITIAL_COSMETICS) {
-      const result = await base44.asServiceRole.entities.CosmeticItem.create(cosmetic);
-      created.push(result);
-    }
+    const { data: created } = await supabase
+      .from('cosmetic_items')
+      .insert(INITIAL_COSMETICS)
+      .select();
 
-    return Response.json({ success: true, created: created.length });
+    return Response.json({ success: true, created: created?.length ?? 0 });
   } catch (error) {
     console.error('Initialize cosmetics error:', error);
     return Response.json({ error: error.message }, { status: 500 });

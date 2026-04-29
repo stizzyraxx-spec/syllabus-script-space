@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const MODERN_MISSIONS = [
   {
@@ -173,7 +172,7 @@ const MODERN_MISSIONS = [
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+
     const body = await req.json();
     
     const missionIndex = body.missionCount % MODERN_MISSIONS.length;

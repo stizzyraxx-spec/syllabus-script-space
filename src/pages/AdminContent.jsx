@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Save, Plus, Trash2, Loader2, ChevronDown, ChevronUp, Lock } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,12 +39,12 @@ function ContentItem({ item, onSave, onDelete }) {
   const isDirty = value !== item.value || label !== (item.label || "");
 
   const saveMutation = useMutation({
-    mutationFn: () => base44.entities.SiteContent.update(item.id, { value, label }),
+    mutationFn: () => db.entities.SiteContent.update(item.id, { value, label }),
     onSuccess: onSave,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => base44.entities.SiteContent.delete(item.id),
+    mutationFn: () => db.entities.SiteContent.delete(item.id),
     onSuccess: onDelete,
   });
 
@@ -120,14 +120,14 @@ export default function AdminContent() {
   const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
-      if (authed) setUser(await base44.auth.me());
+    db.auth.isAuthenticated().then(async (authed) => {
+      if (authed) setUser(await db.auth.me());
     });
   }, []);
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["site-content"],
-    queryFn: () => base44.entities.SiteContent.list("section", 200),
+    queryFn: () => db.entities.SiteContent.list("section", 200),
   });
 
   const handleSeedDefaults = async () => {
@@ -135,7 +135,7 @@ export default function AdminContent() {
     const existingKeys = items.map((i) => i.key);
     const toCreate = DEFAULT_CONTENT.filter((d) => !existingKeys.includes(d.key));
     if (toCreate.length > 0) {
-      await base44.entities.SiteContent.bulkCreate(toCreate);
+      await db.entities.SiteContent.bulkCreate(toCreate);
     }
     await refetch();
     setSeeding(false);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio, Users, ArrowLeft } from "lucide-react";
@@ -15,15 +15,15 @@ export default function Live() {
   const [watchingStream, setWatchingStream] = useState(null);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
-      if (authed) setUser(await base44.auth.me());
+    db.auth.isAuthenticated().then(async (authed) => {
+      if (authed) setUser(await db.auth.me());
       setAuthChecked(true);
     });
   }, []);
 
   const { data: liveStreams = [] } = useQuery({
     queryKey: ["live-streams"],
-    queryFn: () => base44.entities.LiveStream.filter({ status: "live" }, "-created_date"),
+    queryFn: () => db.entities.LiveStream.filter({ status: "live" }, "-created_date"),
     refetchInterval: 5000,
   });
 
@@ -86,7 +86,7 @@ export default function Live() {
             )}
             {!user && (
               <button
-                onClick={() => base44.auth.redirectToLogin()}
+                onClick={() => db.auth.redirectToLogin()}
                 className="mt-4 font-body text-sm text-accent hover:underline font-semibold"
               >
                 Sign in to go live

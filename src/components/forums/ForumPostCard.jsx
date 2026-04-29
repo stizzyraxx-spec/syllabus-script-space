@@ -3,7 +3,7 @@ import { MessageSquare, Clock, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import ShareButton from "@/components/shared/ShareButton";
 import ReportButton from "@/components/moderation/ReportButton";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const categoryLabels = {
@@ -18,7 +18,7 @@ export default function ForumPostCard({ post, user = null, onSelect }) {
   const isOwner = user?.email && post.created_by === user.email;
 
   const deleteMutation = useMutation({
-    mutationFn: () => base44.entities.ForumPost.delete(post.id),
+    mutationFn: () => db.entities.ForumPost.delete(post.id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["forum-posts"] }),
   });
 

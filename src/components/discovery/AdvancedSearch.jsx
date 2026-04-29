@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, X, Save, Loader2, Clock, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,12 +21,12 @@ export default function AdvancedSearch({ userProfile, user }) {
 
   const { data: posts = [] } = useQuery({
     queryKey: ["all-posts-search"],
-    queryFn: () => base44.entities.CommunityPost.list(),
+    queryFn: () => db.entities.CommunityPost.list(),
   });
 
   const { data: forums = [] } = useQuery({
     queryKey: ["all-forum-posts-search"],
-    queryFn: () => base44.entities.ForumPost.list(),
+    queryFn: () => db.entities.ForumPost.list(),
   });
 
   const performSearch = () => {
@@ -72,7 +72,7 @@ export default function AdvancedSearch({ userProfile, user }) {
     // Update search history
     if (user?.email && query) {
       const newHistory = [query, ...(userProfile?.search_history || [])].slice(0, 10);
-      base44.entities.UserProfile.update(userProfile.id, {
+      db.entities.UserProfile.update(userProfile.id, {
         search_history: newHistory,
       }).catch(console.error);
     }
@@ -80,7 +80,7 @@ export default function AdvancedSearch({ userProfile, user }) {
 
   const saveSearchMutation = useMutation({
     mutationFn: () =>
-      base44.entities.UserProfile.update(userProfile.id, {
+      db.entities.UserProfile.update(userProfile.id, {
         saved_searches: [...(userProfile?.saved_searches || []), searchName],
       }),
     onSuccess: () => {
@@ -92,7 +92,7 @@ export default function AdvancedSearch({ userProfile, user }) {
 
   const deleteSearchMutation = useMutation({
     mutationFn: (searchToDelete) =>
-      base44.entities.UserProfile.update(userProfile.id, {
+      db.entities.UserProfile.update(userProfile.id, {
         saved_searches: (userProfile?.saved_searches || []).filter(
           (s) => s !== searchToDelete
         ),

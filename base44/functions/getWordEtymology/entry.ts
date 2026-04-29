@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const ETYMOLOGY_DATABASE = {
   gospel: {
@@ -65,7 +64,7 @@ const ETYMOLOGY_DATABASE = {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+
     const body = await req.json();
     const searchWord = body.word?.toLowerCase().trim();
 

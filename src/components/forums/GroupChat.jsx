@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send, Heart, MessageCircle, Trash2, Archive, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,12 +14,12 @@ export default function GroupChat({ currentUser }) {
 
   const { data: messages = [] } = useQuery({
     queryKey: ["group-chat-messages"],
-    queryFn: () => base44.entities.GroupChatMessage.list("-created_date", 100),
+    queryFn: () => db.entities.GroupChatMessage.list("-created_date", 100),
     refetchInterval: 2000,
   });
 
   useEffect(() => {
-    const unsubscribe = base44.entities.GroupChatMessage.subscribe((event) => {
+    const unsubscribe = db.entities.GroupChatMessage.subscribe((event) => {
       queryClient.invalidateQueries({ queryKey: ["group-chat-messages"] });
     });
     return unsubscribe;
@@ -32,12 +32,12 @@ export default function GroupChat({ currentUser }) {
   const sendMessageMutation = useMutation({
     mutationFn: async (content) => {
       if (!currentUser) return;
-      const userProfile = await base44.entities.UserProfile.filter({
+      const userProfile = await db.entities.UserProfile.filter({
         user_email: currentUser.email,
       });
       const profile = userProfile[0];
 
-      await base44.entities.GroupChatMessage.create({
+      await db.entities.GroupChatMessage.create({
         author_email: currentUser.email,
         author_name: profile?.display_name || currentUser.full_name,
         author_avatar: profile?.avatar_url,
@@ -57,7 +57,7 @@ export default function GroupChat({ currentUser }) {
         ? (msg.liked_by || []).filter((e) => e !== currentUser.email)
         : [...(msg.liked_by || []), currentUser.email];
 
-      await base44.entities.GroupChatMessage.update(msg.id, {
+      await db.entities.GroupChatMessage.update(msg.id, {
         likes: newLikedBy.length,
         liked_by: newLikedBy,
       });
@@ -69,7 +69,7 @@ export default function GroupChat({ currentUser }) {
 
   const deleteMutation = useMutation({
     mutationFn: async (messageId) => {
-      const res = await base44.functions.invoke("deleteGroupChatMessage", { message_id: messageId });
+      const res = await db.functions.invoke("deleteGroupChatMessage", { message_id: messageId });
       return res.data;
     },
     onSuccess: () => {
@@ -79,7 +79,7 @@ export default function GroupChat({ currentUser }) {
 
   const archiveMutation = useMutation({
     mutationFn: async () => {
-      const res = await base44.functions.invoke("archiveGroupChat", {});
+      const res = await db.functions.invoke("archiveGroupChat", {});
       return res.data;
     },
     onSuccess: () => {
@@ -109,7 +109,7 @@ export default function GroupChat({ currentUser }) {
           Sign in to join the group chat discussion.
         </p>
         <button
-          onClick={() => base44.auth.redirectToLogin()}
+          onClick={() => db.auth.redirectToLogin()}
           className="px-4 py-2 rounded-lg bg-accent text-accent-foreground font-body text-sm font-semibold hover:bg-accent/90 transition-colors"
         >
           Sign In

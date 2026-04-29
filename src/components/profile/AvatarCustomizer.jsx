@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { X, Upload, Loader2, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,12 +18,12 @@ export default function AvatarCustomizer({ user, profile, onClose }) {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data) => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      const profiles = await db.entities.UserProfile.filter({ user_email: user.email });
       const existing = profiles[0];
       if (existing) {
-        await base44.entities.UserProfile.update(existing.id, data);
+        await db.entities.UserProfile.update(existing.id, data);
       } else {
-        await base44.entities.UserProfile.create({ user_email: user.email, ...data });
+        await db.entities.UserProfile.create({ user_email: user.email, ...data });
       }
     },
     onSuccess: () => {
@@ -45,7 +45,7 @@ export default function AvatarCustomizer({ user, profile, onClose }) {
     reader.readAsDataURL(file);
     setUploading(true);
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await db.integrations.Core.UploadFile({ file });
       setUploadedUrl(res.url);
       setSelectedEmoji(null);
     } catch (error) {

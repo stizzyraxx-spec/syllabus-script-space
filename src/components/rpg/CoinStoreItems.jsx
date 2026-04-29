@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Zap, TrendingUp, Sparkles, Flame } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import RPGItemStore from "./RPGItemStore";
 
 const COSMETIC_ITEMS = [
@@ -58,7 +58,7 @@ export default function CoinStoreItems({ playerEmail, coins, progress, onPurchas
     setPurchasingId(item.id);
 
     try {
-      await base44.functions.invoke("spendCoins", {
+      await db.functions.invoke("spendCoins", {
         playerEmail,
         coinsCost: item.cost,
         itemType: item.id,

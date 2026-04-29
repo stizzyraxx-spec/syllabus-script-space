@@ -166,7 +166,7 @@ const entities = new Proxy({}, {
 });
 
 // ============================================================
-// AUTH — mirrors base44.auth API
+// AUTH — mirrors db.auth API
 // ============================================================
 const auth = {
   async me() {
@@ -248,22 +248,27 @@ const integrations = {
       return { url: publicUrl };
     },
 
-    async InvokeLLM({ prompt, response_json_schema, system_prompt, model }) {
-      const res = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, response_json_schema, system_prompt, model }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'AI request failed');
-      }
-      return res.json();
-    },
   },
 };
 
 // ============================================================
-// Export base44-compatible object so existing imports work
+// FUNCTIONS — wraps Supabase Edge Functions
 // ============================================================
-export const base44 = { entities, auth, integrations };
+const functions = {
+  async invoke(functionName, body = {}) {
+    const r = await fetch(`/api/${functionName}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      let msg = `Function ${functionName} failed (${r.status})`;
+      try { const j = await r.json(); if (j?.error) msg = j.error; } catch {}
+      throw new Error(msg);
+    }
+    const data = await r.json();
+    return { data };
+  },
+};
+
+export const db = { entities, auth, integrations, functions };

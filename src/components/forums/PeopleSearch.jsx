@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Users, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ export default function PeopleSearch({ currentUser, onViewProfile }) {
 
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["user-profiles"],
-    queryFn: () => base44.entities.UserProfile.list("-created_date", 100),
+    queryFn: () => db.entities.UserProfile.list("-created_date", 100),
   });
 
   const filtered = query.trim()

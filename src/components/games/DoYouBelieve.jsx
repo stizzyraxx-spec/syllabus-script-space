@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/supabaseClient';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Lightbulb, CheckCircle2, XCircle, Loader2, RotateCcw, RefreshCw } from 'lucide-react';
@@ -28,7 +28,7 @@ export default function DoYouBelieve() {
     queryKey: ['belief-questions', difficulty, questionCount],
     queryFn: async () => {
       if (!difficulty || !questionCount) return [];
-      const res = await base44.functions.invoke('generateBeliefQuestions', {
+      const res = await db.functions.invoke('generateBeliefQuestions', {
         difficulty,
         count: questionCount,
       });

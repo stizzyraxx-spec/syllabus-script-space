@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, Bookmark, Highlighter, X, Loader2, BookMarked, Heart, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,14 +26,55 @@ const BOOKS = [
   "James", "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation"
 ];
 
+// Chapter counts per book (KJV)
+const BOOK_CHAPTERS = {
+  Genesis: 50, Exodus: 40, Leviticus: 27, Numbers: 36, Deuteronomy: 34,
+  Joshua: 24, Judges: 21, Ruth: 4, "1 Samuel": 31, "2 Samuel": 24,
+  "1 Kings": 22, "2 Kings": 25, "1 Chronicles": 29, "2 Chronicles": 36,
+  Ezra: 10, Nehemiah: 13, Esther: 10, Job: 42, Psalms: 150, Proverbs: 31,
+  Ecclesiastes: 12, Isaiah: 66, Jeremiah: 52, Lamentations: 5, Ezekiel: 48,
+  Daniel: 12, Hosea: 14, Joel: 3, Amos: 9, Obadiah: 1, Jonah: 4, Micah: 7,
+  Nahum: 3, Habakkuk: 3, Zephaniah: 3, Haggai: 2, Zechariah: 14, Malachi: 4,
+  Matthew: 28, Mark: 16, Luke: 24, John: 21, Acts: 28, Romans: 16,
+  "1 Corinthians": 16, "2 Corinthians": 13, Galatians: 6, Ephesians: 6,
+  Philippians: 4, Colossians: 4, "1 Thessalonians": 5, "2 Thessalonians": 3,
+  "1 Timothy": 6, "2 Timothy": 4, Titus: 3, Philemon: 1, Hebrews: 13,
+  James: 5, "1 Peter": 5, "2 Peter": 3, "1 John": 5, "2 John": 1,
+  "3 John": 1, Jude: 1, Revelation: 22,
+};
+
+function randomBibleLocation() {
+  const book = BOOKS[Math.floor(Math.random() * BOOKS.length)];
+  const chapters = BOOK_CHAPTERS[book] ?? 1;
+  const chapter = Math.floor(Math.random() * chapters) + 1;
+  // verse count unknown until fetch — pick a number; viewer will clamp if needed
+  const verse = Math.floor(Math.random() * 20) + 1;
+  return { book, chapter, verse };
+}
+
 const INTERACTIVE_TABS = ["search", "favorites", "highlights", "journal", "original-language", "etymology", "entomology", "concordance"];
 
 export default function Bible() {
   const [user, setUser] = useState(null);
   const [showSignIn, setShowSignIn] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [currentBook, setCurrentBook] = useState(searchParams.get("book") || "John");
-  const [currentChapter, setCurrentChapter] = useState(parseInt(searchParams.get("chapter") || "1"));
+
+  // Pick a random location on every fresh open (no URL params)
+  const [randomLocation] = useState(() => {
+    if (!searchParams.get("book") && !searchParams.get("chapter")) {
+      return randomBibleLocation();
+    }
+    return null;
+  });
+
+  const [currentBook, setCurrentBook] = useState(
+    searchParams.get("book") || randomLocation?.book || "John"
+  );
+  const [currentChapter, setCurrentChapter] = useState(
+    parseInt(searchParams.get("chapter") || String(randomLocation?.chapter ?? 1))
+  );
+  const [initialVerse] = useState(randomLocation?.verse ?? null);
+
   const activeTab = searchParams.get("tab") || "viewer";
   const queryClient = useQueryClient();
 
@@ -56,7 +97,7 @@ export default function Bible() {
   };
 
   React.useEffect(() => {
-    base44.auth.me()
+    db.auth.me()
       .then(setUser)
       .catch(() => setUser(null));
   }, []);
@@ -139,6 +180,7 @@ export default function Bible() {
               onBookChange={handleBookChange}
               currentChapter={currentChapter}
               onChapterChange={handleChapterChange}
+              initialVerse={initialVerse}
             />
           )}
 

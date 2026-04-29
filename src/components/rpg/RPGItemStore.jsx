@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, Zap, Lock, Check } from "lucide-react";
@@ -29,7 +29,7 @@ export default function RPGItemStore({ playerEmail, coins, progress, onPurchaseS
   const { data: items = [] } = useQuery({
     queryKey: ["rpg-items"],
     queryFn: async () => {
-      const res = await base44.entities.RPGItem.list();
+      const res = await db.entities.RPGItem.list();
       return res || [];
     },
   });
@@ -39,7 +39,7 @@ export default function RPGItemStore({ playerEmail, coins, progress, onPurchaseS
     queryKey: ["player-inventory", playerEmail],
     queryFn: async () => {
       if (!playerEmail) return [];
-      const res = await base44.entities.PlayerInventory.filter({ player_email: playerEmail });
+      const res = await db.entities.PlayerInventory.filter({ player_email: playerEmail });
       return res || [];
     },
   });
@@ -52,7 +52,7 @@ export default function RPGItemStore({ playerEmail, coins, progress, onPurchaseS
       if (coins < item.cost_coins) throw new Error("Not enough coins");
 
       // Add to inventory
-      const inventory = await base44.entities.PlayerInventory.create({
+      const inventory = await db.entities.PlayerInventory.create({
         player_email: playerEmail,
         item_id: itemId,
         equipped: false,
@@ -60,9 +60,9 @@ export default function RPGItemStore({ playerEmail, coins, progress, onPurchaseS
       });
 
       // Deduct coins
-      const coinRecord = await base44.entities.PlayerCoins.filter({ player_email: playerEmail });
+      const coinRecord = await db.entities.PlayerCoins.filter({ player_email: playerEmail });
       if (coinRecord && coinRecord.length > 0) {
-        await base44.entities.PlayerCoins.update(coinRecord[0].id, {
+        await db.entities.PlayerCoins.update(coinRecord[0].id, {
           coins: coins - item.cost_coins,
           total_spent: (coinRecord[0].total_spent || 0) + item.cost_coins,
         });

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, UserPlus, Search, X, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +15,7 @@ export default function FriendsManager({ user, profile }) {
     queryKey: ["friends", user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.UserProfile.filter({ user_email: user.email }).then((d) => {
+        ? db.entities.UserProfile.filter({ user_email: user.email }).then((d) => {
             const p = d[0];
             return p?.following || [];
           })
@@ -27,7 +27,7 @@ export default function FriendsManager({ user, profile }) {
     queryKey: ["followers", user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.UserProfile.filter({ user_email: user.email }).then((d) => {
+        ? db.entities.UserProfile.filter({ user_email: user.email }).then((d) => {
             const p = d[0];
             return p?.followers || [];
           })
@@ -37,19 +37,19 @@ export default function FriendsManager({ user, profile }) {
 
   const addFriendMutation = useMutation({
     mutationFn: async (friendEmail) => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      const profiles = await db.entities.UserProfile.filter({ user_email: user.email });
       const myProfile = profiles[0];
 
       if (!myProfile) {
         // Create profile if doesn't exist
-        await base44.entities.UserProfile.create({
+        await db.entities.UserProfile.create({
           user_email: user.email,
           following: [friendEmail],
         });
       } else {
         const currentFollowing = myProfile.following || [];
         if (!currentFollowing.includes(friendEmail)) {
-          await base44.entities.UserProfile.update(myProfile.id, {
+          await db.entities.UserProfile.update(myProfile.id, {
             following: [...currentFollowing, friendEmail],
           });
         }
@@ -65,12 +65,12 @@ export default function FriendsManager({ user, profile }) {
 
   const removeFriendMutation = useMutation({
     mutationFn: async (friendEmail) => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      const profiles = await db.entities.UserProfile.filter({ user_email: user.email });
       const myProfile = profiles[0];
 
       if (myProfile) {
         const updated = (myProfile.following || []).filter((e) => e !== friendEmail);
-        await base44.entities.UserProfile.update(myProfile.id, { following: updated });
+        await db.entities.UserProfile.update(myProfile.id, { following: updated });
       }
     },
     onSuccess: () => {

@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 // Simplified Bible data for concordance search
 const BIBLE_CONCORDANCE = {
@@ -78,7 +77,7 @@ function extractContext(text, word, contextLength = 40) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+
     const body = await req.json();
     const searchWord = body.word?.toLowerCase().trim();
 

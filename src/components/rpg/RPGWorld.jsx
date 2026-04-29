@@ -4,7 +4,7 @@ import { Zap, Menu, BarChart3, Trophy, LogOut, BookOpen, Backpack, GitBranch, Us
 import { MouseContext } from "@/lib/MouseContext";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import UserMenuBar from "./UserMenuBar";
 import QuestJournal from "./QuestJournal";
 import InventoryView from "./InventoryView";
@@ -94,7 +94,7 @@ export default function RPGWorld({ character, progress, onStartMission, onViewSt
   // Fetch player coins
   const { data: playerCoinsData } = useQuery({
     queryKey: ["player-coins", userEmail],
-    queryFn: () => base44.entities.PlayerCoins.filter({ player_email: userEmail }),
+    queryFn: () => db.entities.PlayerCoins.filter({ player_email: userEmail }),
     enabled: !!userEmail,
   });
 

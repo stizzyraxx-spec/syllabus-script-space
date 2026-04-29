@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Send, X } from "lucide-react";
@@ -13,7 +13,7 @@ export default function PlayerMessagesPanel({ playerEmail, playerName, onClose }
   const { data: messages } = useQuery({
     queryKey: ["player-messages", playerEmail],
     queryFn: () =>
-      base44.entities.PlayerMessage.filter({
+      db.entities.PlayerMessage.filter({
         $or: [{ from_email: playerEmail }, { to_email: playerEmail }],
       }),
     refetchInterval: 3000,
@@ -22,7 +22,7 @@ export default function PlayerMessagesPanel({ playerEmail, playerName, onClose }
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData) => {
-      await base44.entities.PlayerMessage.create(messageData);
+      await db.entities.PlayerMessage.create(messageData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player-messages", playerEmail] });

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Backpack, Zap, Check, Loader2, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -13,7 +13,7 @@ export default function Inventory() {
   React.useEffect(() => {
     const getUser = async () => {
       try {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
       } catch {
         setUser(null);
@@ -29,7 +29,7 @@ export default function Inventory() {
     queryKey: ["inventory", user?.email],
     queryFn: () => 
       user?.email 
-        ? base44.entities.PlayerInventory.filter({ player_email: user.email })
+        ? db.entities.PlayerInventory.filter({ player_email: user.email })
         : Promise.resolve([]),
     enabled: !!user?.email,
   });
@@ -37,20 +37,20 @@ export default function Inventory() {
   // Fetch item details
   const { data: allItems = [] } = useQuery({
     queryKey: ["items"],
-    queryFn: () => base44.entities.Item.list(),
+    queryFn: () => db.entities.Item.list(),
   });
 
   // Map inventory with item details
   const inventoryWithDetails = inventoryItems.map(inv => {
-    const itemDetails = allItems.find(i => i.id === inv.item_id);
-    return { ...inv, ...itemDetails };
+    const itemDetails = allItems.find(i => i.id === inv.item_id) ?? {};
+    return { ...inv, ...itemDetails, name: inv.name || itemDetails.name || 'Unknown Item' };
   });
 
   // Toggle equip/unequip
   const equipToggle = useMutation({
     mutationFn: async (inventoryId) => {
       const inv = inventoryItems.find(i => i.id === inventoryId);
-      return base44.entities.PlayerInventory.update(inventoryId, {
+      return db.entities.PlayerInventory.update(inventoryId, {
         equipped: !inv.equipped
       });
     },
@@ -62,7 +62,7 @@ export default function Inventory() {
   // Delete item
   const deleteItem = useMutation({
     mutationFn: (inventoryId) => 
-      base44.entities.PlayerInventory.delete(inventoryId),
+      db.entities.PlayerInventory.delete(inventoryId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory", user?.email] });
     },
@@ -81,7 +81,7 @@ export default function Inventory() {
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <p className="text-muted-foreground mb-4">Please sign in to view your inventory.</p>
         <button
-          onClick={() => base44.auth.redirectToLogin()}
+          onClick={() => db.auth.redirectToLogin()}
           className="px-6 py-2 rounded-lg bg-accent text-accent-foreground font-semibold hover:bg-accent/90"
         >
           Sign In

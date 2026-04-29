@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, X, PenLine, NotebookPen } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import CreatePost from "@/components/social/CreatePost";
@@ -26,12 +26,12 @@ export default function FloatingPostButton() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
         // Load notebook from profile
-        const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
+        const profiles = await db.entities.UserProfile.filter({ user_email: me.email });
         if (profiles && profiles.length > 0) {
           setProfileId(profiles[0].id);
           try {
@@ -66,9 +66,9 @@ export default function FloatingPostButton() {
       setSaving(true);
       const jsonVal = JSON.stringify(updated);
       if (profileId) {
-        await base44.entities.UserProfile.update(profileId, { notebook: jsonVal });
+        await db.entities.UserProfile.update(profileId, { notebook: jsonVal });
       } else if (user) {
-        const created = await base44.entities.UserProfile.create({ user_email: user.email, notebook: jsonVal });
+        const created = await db.entities.UserProfile.create({ user_email: user.email, notebook: jsonVal });
         setProfileId(created.id);
       }
       setSaving(false);

@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 export function useCoinRewards(userEmail) {
   const queryClient = useQueryClient();
 
   const awardCoinsForGame = useMutation({
     mutationFn: async ({ gameType, score, difficulty = "normal" }) => {
-      const res = await base44.functions.invoke("awardGameCoins", {
+      const res = await db.functions.invoke("awardGameCoins", {
         gameType,
         score,
         difficulty,

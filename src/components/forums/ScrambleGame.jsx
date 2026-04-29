@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { Loader2, Puzzle, RefreshCw, Delete, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -76,7 +76,7 @@ export default function ScrambleGame() {
       const randomBook = ALL_BOOKS[Math.floor(Math.random() * ALL_BOOKS.length)];
       const randomChapter = Math.floor(Math.random() * 5) + 1;
 
-      const res = await base44.functions.invoke("getBibleVerses", { book: randomBook, chapter: randomChapter });
+      const res = await db.functions.invoke("getBibleVerses", { book: randomBook, chapter: randomChapter });
       const verses = res.data?.verses || [];
 
       if (!verses || verses.length === 0) {

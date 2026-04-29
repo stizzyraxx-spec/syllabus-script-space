@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 
 /**
@@ -33,7 +33,7 @@ export default function MentionInput({ value, onChange, placeholder, className, 
 
   const { data: profiles = [] } = useQuery({
     queryKey: ["all-profiles-mention"],
-    queryFn: () => base44.entities.UserProfile.list(),
+    queryFn: () => db.entities.UserProfile.list(),
     staleTime: 60000,
   });
 

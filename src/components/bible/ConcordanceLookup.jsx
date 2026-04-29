@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { Search, Loader2, BookOpen, X } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -16,7 +16,7 @@ export default function ConcordanceLookup() {
     cancelledRef.current = false;
     setLoading(true);
     try {
-      const res = await base44.functions.invoke("getBibleConcordance", {
+      const res = await db.functions.invoke("getBibleConcordance", {
         word: word.trim(),
       });
       if (!cancelledRef.current) setResults(res.data);

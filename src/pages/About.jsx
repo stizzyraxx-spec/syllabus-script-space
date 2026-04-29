@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BookOpen, MessageSquare, Heart, Volume2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 function useContent() {
   const { data = [] } = useQuery({
     queryKey: ["site-content"],
-    queryFn: () => base44.entities.SiteContent.list("section", 200),
+    queryFn: () => db.entities.SiteContent.list("section", 200),
   });
   return (key, fallback) => {
     const item = data.find((d) => d.key === key);

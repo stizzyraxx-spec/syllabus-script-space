@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, BookOpen, TrendingUp, Award } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 const MISSION_DETAILS = {
   david_bathsheba: { title: "David and Bathsheba", location: "Jerusalem" },
@@ -15,7 +15,7 @@ export default function QuestJournal({ playerEmail, character, progress, onBack 
 
   const { data: decisions = [], isLoading } = useQuery({
     queryKey: ["mission-decisions", playerEmail],
-    queryFn: () => base44.entities.RPGMissionDecision.filter({ player_email: playerEmail }),
+    queryFn: () => db.entities.RPGMissionDecision.filter({ player_email: playerEmail }),
     enabled: !!playerEmail,
   });
 

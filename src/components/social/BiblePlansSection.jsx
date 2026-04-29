@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Calendar, Users, ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -9,7 +9,7 @@ export default function BiblePlansSection({ currentUser }) {
   const { data: activePlans = [], isLoading } = useQuery({
     queryKey: ["active-community-plans"],
     queryFn: () =>
-      base44.entities.BiblePlan.list("-created_date", 10).then((plans) =>
+      db.entities.BiblePlan.list("-created_date", 10).then((plans) =>
         plans.filter((p) => p.is_public && p.enrolled_count > 0)
       ),
   });
@@ -18,7 +18,7 @@ export default function BiblePlansSection({ currentUser }) {
     queryKey: ["user-plan-enrollments", currentUser?.email],
     queryFn: () =>
       currentUser?.email
-        ? base44.entities.UserPlanEnrollment.filter({
+        ? db.entities.UserPlanEnrollment.filter({
             user_email: currentUser.email,
             status: "active",
           })

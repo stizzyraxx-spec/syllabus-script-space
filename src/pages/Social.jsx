@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Feed from "../components/social/Feed";
@@ -28,13 +28,13 @@ export default function Social() {
   const [showCompleteProfile, setShowCompleteProfile] = useState(false);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (isAuthed) => {
+    db.auth.isAuthenticated().then(async (isAuthed) => {
       setAuthed(isAuthed);
       if (isAuthed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
         // Check if this user has a profile yet — if not, prompt them
-        const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
+        const profiles = await db.entities.UserProfile.filter({ user_email: me.email });
         if (profiles.length === 0) {
           setShowCompleteProfile(true);
         }
@@ -60,7 +60,7 @@ export default function Social() {
             Connect with believers, share reflections, and follow others on their faith journey.
           </p>
           <button
-            onClick={() => base44.auth.redirectToLogin()}
+            onClick={() => db.auth.redirectToLogin()}
             className="bg-accent text-accent-foreground font-body font-semibold px-6 py-3 rounded-lg hover:bg-accent/90 transition-colors"
           >
             Sign In / Create Account

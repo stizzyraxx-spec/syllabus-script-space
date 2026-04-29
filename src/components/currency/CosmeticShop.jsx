@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ShoppingBag, Zap, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,14 +20,14 @@ export default function CosmeticShop({ userEmail }) {
   const { data: cosmetics = [] } = useQuery({
     queryKey: ["cosmetics", selectedCategory],
     queryFn: () =>
-      base44.entities.CosmeticItem.filter({ category: selectedCategory, is_available: true }),
+      db.entities.CosmeticItem.filter({ category: selectedCategory, is_available: true }),
   });
 
   const { data: playerCoins } = useQuery({
     queryKey: ["player-coins", userEmail],
     queryFn: () =>
       userEmail
-        ? base44.entities.PlayerCoins.filter({ player_email: userEmail }).then(
+        ? db.entities.PlayerCoins.filter({ player_email: userEmail }).then(
             (d) => d[0] || { coins: 0 }
           )
         : Promise.resolve({ coins: 0 }),
@@ -38,14 +38,14 @@ export default function CosmeticShop({ userEmail }) {
     queryKey: ["owned-cosmetics", userEmail],
     queryFn: () =>
       userEmail
-        ? base44.entities.PlayerCosmeticInventory.filter({ player_email: userEmail })
+        ? db.entities.PlayerCosmeticInventory.filter({ player_email: userEmail })
         : Promise.resolve([]),
     enabled: !!userEmail,
   });
 
   const purchaseMutation = useMutation({
     mutationFn: (cosmeticId) =>
-      base44.functions.invoke("purchaseCosmetic", { cosmeticId }),
+      db.functions.invoke("purchaseCosmetic", { cosmeticId }),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["player-coins", userEmail] });
       queryClient.invalidateQueries({ queryKey: ["owned-cosmetics", userEmail] });

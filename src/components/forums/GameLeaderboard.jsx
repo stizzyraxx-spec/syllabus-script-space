@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Trophy, Medal, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -85,7 +85,7 @@ export default function GameLeaderboard() {
 
   const { data: allScores = [], isLoading } = useQuery({
     queryKey: ["game-leaderboard"],
-    queryFn: () => base44.entities.GameScore.list("-score", 100),
+    queryFn: () => db.entities.GameScore.list("-score", 100),
     refetchInterval: 30000,
   });
 

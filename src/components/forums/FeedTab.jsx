@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { uploadFileToS3 } from "@/lib/uploadToS3";
 import VideoPlayer from "@/components/shared/VideoPlayer";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,7 +17,7 @@ function CreateFeedPost({ user, myProfile, onClose }) {
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.CommunityPost.create(data),
+    mutationFn: (data) => db.entities.CommunityPost.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
       onClose();
@@ -115,27 +115,27 @@ export default function FeedTab({ user, searchParams, setSearchParams }) {
   };
 
   const deleteMutation = useMutation({
-    mutationFn: (postId) => base44.entities.CommunityPost.delete(postId),
+    mutationFn: (postId) => db.entities.CommunityPost.delete(postId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["forum-feed"] }),
   });
 
   const { data: myProfile } = useQuery({
     queryKey: ["my-profile", user?.email],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: user.email }),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: user.email }),
     select: (data) => data[0],
     enabled: !!user?.email,
   });
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["forum-feed"],
-    queryFn: () => base44.entities.CommunityPost.list("-created_date", 30),
+    queryFn: () => db.entities.CommunityPost.list("-created_date", 30),
   });
 
   const likeMutation = useMutation({
     mutationFn: async (post) => {
       const likedBy = post.liked_by || [];
       const alreadyLiked = likedBy.includes(user?.email);
-      return base44.entities.CommunityPost.update(post.id, {
+      return db.entities.CommunityPost.update(post.id, {
         likes: alreadyLiked ? (post.likes || 1) - 1 : (post.likes || 0) + 1,
         liked_by: alreadyLiked
           ? likedBy.filter((e) => e !== user?.email)
@@ -160,7 +160,7 @@ export default function FeedTab({ user, searchParams, setSearchParams }) {
         <div className="p-4 rounded-xl border border-border bg-card mb-6 text-center">
           <p className="font-body text-sm text-muted-foreground mb-2">Sign in to create posts</p>
           <button
-            onClick={() => base44.auth.redirectToLogin()}
+            onClick={() => db.auth.redirectToLogin()}
             className="font-body text-sm font-semibold text-accent hover:text-accent/80 transition-colors"
           >
             Sign In / Create Account

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { toast } from "sonner";
 
 export function useGameCoinRewards(userEmail) {
@@ -8,7 +8,7 @@ export function useGameCoinRewards(userEmail) {
       if (!userEmail) return;
 
       try {
-        const res = await base44.functions.invoke("awardGameCoins", {
+        const res = await db.functions.invoke("awardGameCoins", {
           gameType,
           score,
           difficulty,

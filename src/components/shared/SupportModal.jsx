@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, Send, Loader2, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -24,7 +24,7 @@ export default function SupportModal({ onClose, currentUser }) {
     setError(null);
 
     try {
-      await base44.functions.invoke("submitSupport", {
+      await db.functions.invoke("submitSupport", {
         email,
         subject,
         message,

@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { X, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,7 +8,7 @@ export default function WordDefinition({ word, onClose }) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["word-def", word],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getBibleWordDefinition", { word });
+      const res = await db.functions.invoke("getBibleWordDefinition", { word });
       if (res.data?.definition) {
         return res.data;
       }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronUp, Settings, Backpack, BookOpen, BarChart3, Zap, Users, MessageSquare, Trophy, GitBranch, ShoppingCart } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 const MENU_ITEMS = [
   { id: "inventory", label: "Inventory", icon: Backpack, color: "bg-blue-500/20 text-blue-400" },

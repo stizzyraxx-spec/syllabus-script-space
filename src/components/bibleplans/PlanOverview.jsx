@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calendar, Clock, Users, BookOpen, Loader2, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -12,7 +12,7 @@ export default function PlanOverview({ planId, user }) {
   const { data: plan } = useQuery({
     queryKey: ["bible-plan", planId],
     queryFn: () =>
-      base44.entities.BiblePlan.list("-created_date").then((plans) =>
+      db.entities.BiblePlan.list("-created_date").then((plans) =>
         plans.find((p) => p.id === planId)
       ),
   });
@@ -21,7 +21,7 @@ export default function PlanOverview({ planId, user }) {
     queryKey: ["enrollment", planId, user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.UserPlanEnrollment.filter({
+        ? db.entities.UserPlanEnrollment.filter({
             user_email: user.email,
             plan_id: planId,
           }).then((e) => e[0])
@@ -32,7 +32,7 @@ export default function PlanOverview({ planId, user }) {
   const { data: enrollmentCount = 0 } = useQuery({
     queryKey: ["enrollment-count", planId],
     queryFn: () =>
-      base44.entities.UserPlanEnrollment.filter({
+      db.entities.UserPlanEnrollment.filter({
         plan_id: planId,
         status: "active",
       }).then((e) => e.length),
@@ -41,14 +41,14 @@ export default function PlanOverview({ planId, user }) {
   const joinMutation = useMutation({
     mutationFn: async () => {
       if (!user?.email) {
-        base44.auth.redirectToLogin();
+        db.auth.redirectToLogin();
         return;
       }
       const startDate = plan.type === "selfpaced"
         ? new Date().toISOString().split("T")[0]
         : plan.start_date;
 
-      await base44.entities.UserPlanEnrollment.create({
+      await db.entities.UserPlanEnrollment.create({
         user_email: user.email,
         plan_id: planId,
         status: "active",
@@ -58,7 +58,7 @@ export default function PlanOverview({ planId, user }) {
       });
 
       // Update plan enrollment count
-      await base44.entities.BiblePlan.update(planId, {
+      await db.entities.BiblePlan.update(planId, {
         enrolled_count: (plan.enrolled_count || 0) + 1,
       });
 

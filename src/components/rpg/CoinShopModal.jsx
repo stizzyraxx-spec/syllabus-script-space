@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, ShoppingCart, Sparkles } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 const COIN_PACKAGES = [
   { id: "100", coins: 100, price: 0.99, bonus: 0, label: "Starter" },
@@ -27,7 +27,7 @@ export default function CoinShopModal({ playerEmail, onClose, onCoinsAdded }) {
     setError(null);
 
     try {
-      const response = await base44.functions.invoke("createCoinCheckout", {
+      const response = await db.functions.invoke("createCoinCheckout", {
         packageId: pkg.id,
         playerEmail,
       });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Save, Loader2, Trash2, Plus } from "lucide-react";
 import { motion } from "framer-motion";
@@ -40,9 +40,9 @@ export default function PrayerJournalEntry({ entry, userEmail, onClose }) {
       };
 
       if (entry?.id) {
-        await base44.entities.PrayerJournal.update(entry.id, data);
+        await db.entities.PrayerJournal.update(entry.id, data);
       } else {
-        await base44.entities.PrayerJournal.create(data);
+        await db.entities.PrayerJournal.create(data);
       }
     },
     onSuccess: () => {
@@ -57,7 +57,7 @@ export default function PrayerJournalEntry({ entry, userEmail, onClose }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => base44.entities.PrayerJournal.delete(entry.id),
+    mutationFn: () => db.entities.PrayerJournal.delete(entry.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prayer-journal", userEmail] });
       toast.success("Entry deleted");

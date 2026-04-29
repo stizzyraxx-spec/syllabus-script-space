@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const MODERN_CHALLENGES = [
   {
@@ -145,7 +144,7 @@ const MODERN_CHALLENGES = [
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+
     const challenge = MODERN_CHALLENGES[Math.floor(Math.random() * MODERN_CHALLENGES.length)];
 
     if (!challenge) {

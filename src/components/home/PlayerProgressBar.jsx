@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Zap, Award } from "lucide-react";
@@ -10,15 +10,15 @@ export default function PlayerProgressBar() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
-      if (authed) setUser(await base44.auth.me());
+    db.auth.isAuthenticated().then(async (authed) => {
+      if (authed) setUser(await db.auth.me());
     });
   }, []);
 
   const { data: playerProgress } = useQuery({
     queryKey: ["player-progress", user?.email],
     queryFn: () =>
-      base44.entities.RPGPlayerProgress.filter({
+      db.entities.RPGPlayerProgress.filter({
         player_email: user?.email,
       }),
     enabled: !!user?.email,
@@ -27,7 +27,7 @@ export default function PlayerProgressBar() {
   const { data: userProfile } = useQuery({
     queryKey: ["user-profile", user?.email],
     queryFn: () =>
-      base44.entities.UserProfile.filter({
+      db.entities.UserProfile.filter({
         user_email: user?.email,
       }),
     enabled: !!user?.email,

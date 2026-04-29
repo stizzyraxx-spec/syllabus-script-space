@@ -1,37 +1,40 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
     const payload = await req.json();
-
     const post = payload.data;
+
     if (!post) {
       return Response.json({ error: 'No post data' }, { status: 400 });
     }
 
-    // Get all users to notify
-    const allUsers = await base44.asServiceRole.entities.User.list();
+    const { data: allUsers } = await supabase.from('users').select('email');
 
     const authorEmail = post.created_by || post.author_email;
     const authorName = post.author_name || "Someone";
     const postTitle = post.title || "a new discussion";
 
-    const notifications = allUsers
+    const notifications = (allUsers || [])
       .filter((u) => u.email !== authorEmail)
-      .map((u) =>
-        base44.asServiceRole.entities.Notification.create({
-          recipient_email: u.email,
-          actor_name: authorName,
-          actor_email: authorEmail,
-          type: "comment",
-          message: `${authorName} started a new discussion: "${postTitle}"`,
-          link_path: "/forums",
-          read: false,
-        })
-      );
+      .map((u) => ({
+        recipient_email: u.email,
+        actor_name: authorName,
+        actor_email: authorEmail,
+        type: "comment",
+        message: `${authorName} started a new discussion: "${postTitle}"`,
+        link_path: "/forums",
+        read: false,
+      }));
 
-    await Promise.all(notifications);
+    if (notifications.length > 0) {
+      await supabase.from('notifications').insert(notifications);
+    }
 
     console.log(`Notified ${notifications.length} users about new forum post: ${postTitle}`);
     return Response.json({ notified: notifications.length });

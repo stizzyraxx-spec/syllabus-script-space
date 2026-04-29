@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Pencil, ExternalLink, Grid, MessageCircle, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,12 +52,12 @@ export default function ProfileView({ profileEmail, currentUser, onBack }) {
 
   const { data: profiles = [] } = useQuery({
     queryKey: ["profile", profileEmail],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: profileEmail }),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: profileEmail }),
   });
   const profile = profiles[0];
 
   useEffect(() => {
-    const unsubscribe = base44.entities.UserProfile.subscribe((event) => {
+    const unsubscribe = db.entities.UserProfile.subscribe((event) => {
       if (event.data?.user_email === profileEmail) {
         queryClient.invalidateQueries({ queryKey: ["profile", profileEmail] });
       }
@@ -67,7 +67,7 @@ export default function ProfileView({ profileEmail, currentUser, onBack }) {
 
   const { data: posts = [] } = useQuery({
     queryKey: ["user-posts", profileEmail],
-    queryFn: () => base44.entities.CommunityPost.filter({ author_email: profileEmail }, "-created_date"),
+    queryFn: () => db.entities.CommunityPost.filter({ author_email: profileEmail }, "-created_date"),
   });
 
   const followMutation = useMutation({
@@ -75,24 +75,24 @@ export default function ProfileView({ profileEmail, currentUser, onBack }) {
       const followersList = profile?.followers || [];
       const alreadyFollowing = followersList.includes(currentUser?.email);
       if (profile) {
-        await base44.entities.UserProfile.update(profile.id, {
+        await db.entities.UserProfile.update(profile.id, {
           followers: alreadyFollowing
             ? followersList.filter((e) => e !== currentUser?.email)
             : [...followersList, currentUser?.email],
         });
       }
-      const myProfiles = await base44.entities.UserProfile.filter({ user_email: currentUser?.email });
+      const myProfiles = await db.entities.UserProfile.filter({ user_email: currentUser?.email });
       if (myProfiles.length > 0) {
         const myProfile = myProfiles[0];
         const myFollowing = myProfile.following || [];
-        await base44.entities.UserProfile.update(myProfile.id, {
+        await db.entities.UserProfile.update(myProfile.id, {
           following: alreadyFollowing
             ? myFollowing.filter((e) => e !== profileEmail)
             : [...myFollowing, profileEmail],
         });
       }
       if (!alreadyFollowing && profileEmail && profileEmail !== currentUser?.email) {
-        await base44.entities.Notification.create({
+        await db.entities.Notification.create({
           recipient_email: profileEmail,
           actor_name: currentUser?.full_name || "Someone",
           actor_email: currentUser?.email,

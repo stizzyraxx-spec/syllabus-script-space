@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2, Play, Heart, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,11 +10,11 @@ export default function LiveVideoGallery({ userEmail, currentUser }) {
 
   const { data: streams = [], isLoading } = useQuery({
     queryKey: ["user-live-streams", userEmail],
-    queryFn: () => base44.entities.LiveStream.filter({ host_email: userEmail, status: "ended" }, "-created_date", 20),
+    queryFn: () => db.entities.LiveStream.filter({ host_email: userEmail, status: "ended" }, "-created_date", 20),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (streamId) => base44.entities.LiveStream.update(streamId, { video_url: null }),
+    mutationFn: (streamId) => db.entities.LiveStream.update(streamId, { video_url: null }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["user-live-streams", userEmail] }),
   });
 

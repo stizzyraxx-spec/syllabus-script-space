@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Shield, ArrowRight } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { Link } from "react-router-dom";
 
 export default function HeroSection() {
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(setIsAuthed);
+    db.auth.isAuthenticated().then(setIsAuthed);
   }, []);
 
   return (

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useTrading(playerEmail) {
@@ -10,7 +10,7 @@ export function useTrading(playerEmail) {
   const { data: activeTrades } = useQuery({
     queryKey: ["active-trades", playerEmail],
     queryFn: () =>
-      base44.entities.Trade.filter({
+      db.entities.Trade.filter({
         $or: [
           { initiator_email: playerEmail },
           { recipient_email: playerEmail },
@@ -27,7 +27,7 @@ export function useTrading(playerEmail) {
   const createTradeMutation = useMutation({
     mutationFn: async ({ recipientEmail, recipientName, initiatorItems }) => {
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-      return await base44.entities.Trade.create({
+      return await db.entities.Trade.create({
         initiator_email: playerEmail,
         initiator_name: playerEmail.split("@")[0],
         recipient_email: recipientEmail,
@@ -51,7 +51,7 @@ export function useTrading(playerEmail) {
         ? { initiator_confirmed: confirmed }
         : { recipient_items: recipientItems, recipient_confirmed: confirmed };
 
-      return await base44.entities.Trade.update(tradeId, updateData);
+      return await db.entities.Trade.update(tradeId, updateData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["active-trades", playerEmail] });
@@ -66,11 +66,11 @@ export function useTrading(playerEmail) {
       }
 
       // Execute trade - move items between inventories
-      const initiatorInventory = await base44.entities.PlayerInventory.filter({
+      const initiatorInventory = await db.entities.PlayerInventory.filter({
         player_email: trade.initiator_email,
       });
 
-      const recipientInventory = await base44.entities.PlayerInventory.filter({
+      const recipientInventory = await db.entities.PlayerInventory.filter({
         player_email: trade.recipient_email,
       });
 
@@ -80,7 +80,7 @@ export function useTrading(playerEmail) {
           (inv) => inv.item_id === item.item_id
         );
         if (existing) {
-          await base44.entities.PlayerInventory.update(existing.id, {
+          await db.entities.PlayerInventory.update(existing.id, {
             quantity: Math.max(0, (existing.quantity || 1) - item.quantity),
           });
         }
@@ -89,11 +89,11 @@ export function useTrading(playerEmail) {
           (inv) => inv.item_id === item.item_id
         );
         if (recipientItem) {
-          await base44.entities.PlayerInventory.update(recipientItem.id, {
+          await db.entities.PlayerInventory.update(recipientItem.id, {
             quantity: (recipientItem.quantity || 1) + item.quantity,
           });
         } else {
-          await base44.entities.PlayerInventory.create({
+          await db.entities.PlayerInventory.create({
             player_email: trade.recipient_email,
             item_id: item.item_id,
             quantity: item.quantity,
@@ -107,7 +107,7 @@ export function useTrading(playerEmail) {
           (inv) => inv.item_id === item.item_id
         );
         if (existing) {
-          await base44.entities.PlayerInventory.update(existing.id, {
+          await db.entities.PlayerInventory.update(existing.id, {
             quantity: Math.max(0, (existing.quantity || 1) - item.quantity),
           });
         }
@@ -116,11 +116,11 @@ export function useTrading(playerEmail) {
           (inv) => inv.item_id === item.item_id
         );
         if (initiatorItem) {
-          await base44.entities.PlayerInventory.update(initiatorItem.id, {
+          await db.entities.PlayerInventory.update(initiatorItem.id, {
             quantity: (initiatorItem.quantity || 1) + item.quantity,
           });
         } else {
-          await base44.entities.PlayerInventory.create({
+          await db.entities.PlayerInventory.create({
             player_email: trade.initiator_email,
             item_id: item.item_id,
             quantity: item.quantity,
@@ -129,7 +129,7 @@ export function useTrading(playerEmail) {
       }
 
       // Mark trade as completed
-      await base44.entities.Trade.update(tradeId, { status: "completed" });
+      await db.entities.Trade.update(tradeId, { status: "completed" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["active-trades", playerEmail] });
@@ -139,7 +139,7 @@ export function useTrading(playerEmail) {
   // Cancel trade mutation
   const cancelTradeMutation = useMutation({
     mutationFn: async (tradeId) => {
-      return await base44.entities.Trade.update(tradeId, {
+      return await db.entities.Trade.update(tradeId, {
         status: "cancelled",
       });
     },

@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const QUESTIONS_BY_DIFFICULTY = {
   theologian: [
@@ -289,8 +288,8 @@ const QUESTIONS_BY_DIFFICULTY = {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+
+
 
     const body = await req.json();
     const difficulty = body.difficulty || 'easy';

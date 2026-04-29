@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,13 +12,13 @@ export default function BibleFavorites({ user, onSelectVerse }) {
   const { data: favorites = [], isLoading } = useQuery({
     queryKey: ["favorites", user?.email],
     queryFn: () => user?.email 
-      ? base44.entities.BibleFavorite.filter({ user_email: user.email }, "-created_date")
+      ? db.entities.BibleFavorite.filter({ user_email: user.email }, "-created_date")
       : Promise.resolve([]),
     enabled: !!user?.email,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.BibleFavorite.delete(id),
+    mutationFn: (id) => db.entities.BibleFavorite.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorites", user?.email] }),
   });
 
@@ -27,7 +27,7 @@ export default function BibleFavorites({ user, onSelectVerse }) {
       <div className="text-center py-12">
         <p className="font-body text-muted-foreground mb-3">Sign in to save your favorite verses</p>
         <button
-          onClick={() => base44.auth.redirectToLogin()}
+          onClick={() => db.auth.redirectToLogin()}
           className="px-4 py-2 rounded-lg bg-accent text-accent-foreground font-body text-sm font-semibold hover:bg-accent/90"
         >
           Sign In

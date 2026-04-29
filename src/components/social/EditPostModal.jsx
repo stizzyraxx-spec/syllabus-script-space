@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, Save } from "lucide-react";
 import { motion } from "framer-motion";
@@ -12,7 +12,7 @@ export default function EditPostModal({ post, onClose }) {
 
   const saveMutation = useMutation({
     mutationFn: () =>
-      base44.entities.CommunityPost.update(post.id, {
+      db.entities.CommunityPost.update(post.id, {
         caption: filterProfanity(caption),
       }),
     onSuccess: () => {

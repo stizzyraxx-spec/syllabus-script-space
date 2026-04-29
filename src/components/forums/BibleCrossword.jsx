@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, XCircle, RefreshCw, ChevronRight } from "lucide-react";
 import { useAwardPoints } from "@/hooks/useAwardPoints";
@@ -105,7 +105,7 @@ export default function BibleCrossword() {
     
     // Only award points once per correct answer
     if (clue && updatedAnswers[key] === clue.answer && userAnswers[key] !== clue.answer) {
-      const user = await base44.auth.me().catch(() => null);
+      const user = await db.auth.me().catch(() => null);
       if (user) {
         await awardPoints(user.email, "crossword");
         toast.success("✨ +1 point for correct answer!");
@@ -130,9 +130,9 @@ export default function BibleCrossword() {
     setGameState("results");
 
     try {
-      const currentUser = await base44.auth.me().catch(() => null);
+      const currentUser = await db.auth.me().catch(() => null);
       if (currentUser) {
-        await base44.entities.GameScore.create({
+        await db.entities.GameScore.create({
           player_email: currentUser.email,
           player_name: currentUser.full_name,
           game_type: "crossword",

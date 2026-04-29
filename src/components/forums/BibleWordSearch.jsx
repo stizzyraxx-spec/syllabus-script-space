@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, Clock, Zap, RefreshCw, ChevronRight } from "lucide-react";
 import { useAwardPoints } from "@/hooks/useAwardPoints";
@@ -191,7 +191,7 @@ export default function BibleWordSearch() {
   };
 
   const finishGame = async () => {
-    const user = await base44.auth.me().catch(() => null);
+    const user = await db.auth.me().catch(() => null);
     if (user) {
       await awardPoints(user.email, "word_search");
     }

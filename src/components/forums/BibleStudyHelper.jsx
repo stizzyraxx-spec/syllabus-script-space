@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
 import { BookOpen, Search, Lightbulb, ChevronDown, ChevronUp, Send, Loader2, Sparkles, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -122,23 +121,11 @@ function AISearchEngine() {
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: q }]);
     setLoading(true);
-
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a dedicated Biblical scholar and historian AI. Your singular purpose is to:
-1. Answer questions about the Bible with accuracy and depth
-2. Provide historical evidence, archaeological discoveries, and manuscript data that support the Bible's reliability
-3. Cross-reference Scripture with secular historical records (Josephus, Tacitus, Pliny, Dead Sea Scrolls, etc.)
-4. Explain fulfilled prophecies, dating of manuscripts, and textual criticism findings
-5. Always cite specific Bible passages, historical sources, and archaeological evidence
-
-Question: ${q}
-
-Provide a thorough, evidence-based answer. Use specific historical facts, dates, scholars, and archaeological findings. Be confident in affirming Biblical truth while engaging seriously with historical evidence.`,
-      add_context_from_internet: true,
-      model: "gemini_3_flash",
-    });
-
-    setMessages((prev) => [...prev, { role: "assistant", content: result }]);
+    await new Promise(r => setTimeout(r, 400));
+    setMessages((prev) => [...prev, {
+      role: "assistant",
+      content: "The AI search feature is currently offline. For in-depth Bible research, visit BibleGateway.com, BlueLetterBible.org, or the CCEL (Christian Classics Ethereal Library) at ccel.org for comprehensive scholarly resources.",
+    }]);
     setLoading(false);
   };
 

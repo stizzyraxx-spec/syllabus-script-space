@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send, Heart, MessageCircle, Trash2, Archive, Loader2, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,12 +27,12 @@ export default function MultiChannelGroupChat({ currentUser }) {
 
   const { data: messages = [] } = useQuery({
     queryKey: ["group-chat-messages", activeChannel],
-    queryFn: () => base44.entities.GroupChatMessage.filter({ channel: activeChannel }, "-created_date", 100),
+    queryFn: () => db.entities.GroupChatMessage.filter({ channel: activeChannel }, "-created_date", 100),
     refetchInterval: 2000,
   });
 
   useEffect(() => {
-    const unsubscribe = base44.entities.GroupChatMessage.subscribe((event) => {
+    const unsubscribe = db.entities.GroupChatMessage.subscribe((event) => {
       if (event.data?.channel === activeChannel) {
         queryClient.invalidateQueries({ queryKey: ["group-chat-messages", activeChannel] });
       }
@@ -47,12 +47,12 @@ export default function MultiChannelGroupChat({ currentUser }) {
   const sendMessageMutation = useMutation({
     mutationFn: async (content) => {
       if (!currentUser) return;
-      const userProfile = await base44.entities.UserProfile.filter({
+      const userProfile = await db.entities.UserProfile.filter({
         user_email: currentUser.email,
       });
       const profile = userProfile[0];
 
-      await base44.entities.GroupChatMessage.create({
+      await db.entities.GroupChatMessage.create({
         channel: activeChannel,
         author_email: currentUser.email,
         author_name: profile?.display_name || currentUser.full_name,
@@ -73,7 +73,7 @@ export default function MultiChannelGroupChat({ currentUser }) {
         ? (msg.liked_by || []).filter((e) => e !== currentUser.email)
         : [...(msg.liked_by || []), currentUser.email];
 
-      await base44.entities.GroupChatMessage.update(msg.id, {
+      await db.entities.GroupChatMessage.update(msg.id, {
         likes: newLikedBy.length,
         liked_by: newLikedBy,
       });
@@ -85,7 +85,7 @@ export default function MultiChannelGroupChat({ currentUser }) {
 
   const deleteMutation = useMutation({
     mutationFn: async (messageId) => {
-      const res = await base44.functions.invoke("deleteGroupChatMessage", { message_id: messageId });
+      const res = await db.functions.invoke("deleteGroupChatMessage", { message_id: messageId });
       return res.data;
     },
     onSuccess: () => {
@@ -95,7 +95,7 @@ export default function MultiChannelGroupChat({ currentUser }) {
 
   const archiveMutation = useMutation({
     mutationFn: async () => {
-      const res = await base44.functions.invoke("archiveGroupChat", { channel: activeChannel });
+      const res = await db.functions.invoke("archiveGroupChat", { channel: activeChannel });
       return res.data;
     },
     onSuccess: () => {
@@ -125,7 +125,7 @@ export default function MultiChannelGroupChat({ currentUser }) {
           Sign in to join group chat discussions.
         </p>
         <button
-          onClick={() => base44.auth.redirectToLogin()}
+          onClick={() => db.auth.redirectToLogin()}
           className="px-4 py-2 rounded-lg bg-accent text-accent-foreground font-body text-sm font-semibold hover:bg-accent/90 transition-colors"
         >
           Sign In

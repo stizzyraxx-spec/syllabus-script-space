@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 /**
  * Uploads a File object to AWS S3 via the backend function.
@@ -11,7 +11,7 @@ export async function uploadFileToS3(file) {
       try {
         // e.target.result is "data:<type>;base64,<data>"
         const base64 = e.target.result.split(",")[1];
-        const response = await base44.functions.invoke("uploadToS3", {
+        const response = await db.functions.invoke("uploadToS3", {
           fileName: file.name,
           fileType: file.type,
           fileData: base64,

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Mail, Loader2, Save } from "lucide-react";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ export default function DailyVerseSettings({ profile }) {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      return base44.auth.updateMe({
+      return db.auth.updateMe({
         daily_verse_enabled: enabled,
         daily_verse_time: time,
       });

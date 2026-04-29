@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Flame, Shield, BookOpen, Star, ChevronRight } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 // --- Radar Chart ---
 function RadarChart({ stats }) {
@@ -113,7 +113,7 @@ export default function RPGStats({ character, progress, onBack }) {
 
   useEffect(() => {
     if (!progress.player_email) { setLoadingDecisions(false); return; }
-    base44.entities.RPGMissionDecision.filter({ player_email: progress.player_email })
+    db.entities.RPGMissionDecision.filter({ player_email: progress.player_email })
       .then(res => { setDecisions(res || []); setLoadingDecisions(false); })
       .catch(() => setLoadingDecisions(false));
   }, [progress.player_email]);

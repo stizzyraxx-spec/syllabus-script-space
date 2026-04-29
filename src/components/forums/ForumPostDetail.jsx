@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Send, Loader2, MessageSquare, Trash2, Pencil, Check, X, Lock, Link } from "lucide-react";
 import { format, differenceInMinutes } from "date-fns";
@@ -37,21 +37,21 @@ export default function ForumPostDetail({ post, user, onBack }) {
 
   const { data: replies = [] } = useQuery({
     queryKey: ["replies", post.id],
-    queryFn: () => base44.entities.ForumReply.filter({ post_id: post.id }, "created_date"),
+    queryFn: () => db.entities.ForumReply.filter({ post_id: post.id }, "created_date"),
   });
 
   const createReplyMutation = useMutation({
-    mutationFn: (data) => base44.entities.ForumReply.create(data),
+    mutationFn: (data) => db.entities.ForumReply.create(data),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["replies", post.id] });
-      await base44.entities.ForumPost.update(post.id, { reply_count: (post.reply_count || 0) + 1 });
+      await db.entities.ForumPost.update(post.id, { reply_count: (post.reply_count || 0) + 1 });
       queryClient.invalidateQueries({ queryKey: ["forum-posts"] });
       setReplyContent("");
     },
   });
 
   const deletePostMutation = useMutation({
-    mutationFn: () => base44.entities.ForumPost.delete(post.id),
+    mutationFn: () => db.entities.ForumPost.delete(post.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["forum-posts"] });
       onBack();
@@ -59,7 +59,7 @@ export default function ForumPostDetail({ post, user, onBack }) {
   });
 
   const updatePostMutation = useMutation({
-    mutationFn: () => base44.entities.ForumPost.update(post.id, { title: editTitle, content: editContent }),
+    mutationFn: () => db.entities.ForumPost.update(post.id, { title: editTitle, content: editContent }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["forum-posts"] });
       setEditingPost(false);
@@ -67,7 +67,7 @@ export default function ForumPostDetail({ post, user, onBack }) {
   });
 
   const updateReplyMutation = useMutation({
-    mutationFn: ({ id, content }) => base44.entities.ForumReply.update(id, { content }),
+    mutationFn: ({ id, content }) => db.entities.ForumReply.update(id, { content }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["replies", post.id] });
       setEditingReplyId(null);
@@ -75,7 +75,7 @@ export default function ForumPostDetail({ post, user, onBack }) {
   });
 
   const deleteReplyMutation = useMutation({
-    mutationFn: (id) => base44.entities.ForumReply.delete(id),
+    mutationFn: (id) => db.entities.ForumReply.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["replies", post.id] }),
   });
 
@@ -306,7 +306,7 @@ export default function ForumPostDetail({ post, user, onBack }) {
             Sign in to comment on this discussion.
           </p>
           <button
-            onClick={() => base44.auth.redirectToLogin()}
+            onClick={() => db.auth.redirectToLogin()}
             className="font-body text-sm font-semibold text-accent hover:text-accent/80 transition-colors"
           >
             Sign In / Create Account

@@ -1,5 +1,10 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 const s3 = new S3Client({
   region: Deno.env.get('AWS_S3_REGION'),
@@ -11,27 +16,27 @@ const s3 = new S3Client({
 
 const BUCKET = Deno.env.get('AWS_S3_BUCKET_NAME');
 const REGION = Deno.env.get('AWS_S3_REGION');
-const CONVERSATIONS_CONTAINER = 'conversations-archive';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
     const { channel } = await req.json();
-    
-    // Fetch group chat messages for the specified channel (or all if not specified)
-    const messages = channel 
-      ? await base44.entities.GroupChatMessage.filter({ channel }, "-created_date", 1000)
-      : await base44.entities.GroupChatMessage.list("-created_date", 1000);
-    
-    if (!messages || messages.length === 0) {
-      return Response.json({ 
-        success: true, 
-        archived_count: 0, 
-        message: 'No messages to archive' 
-      });
+
+    let query = supabase
+      .from('group_chat_messages')
+      .select('*')
+      .order('created_date', { ascending: false })
+      .limit(1000);
+
+    if (channel) {
+      query = query.eq('channel', channel);
     }
 
-    // Prepare conversation data
+    const { data: messages } = await query;
+
+    if (!messages || messages.length === 0) {
+      return Response.json({ success: true, archived_count: 0, message: 'No messages to archive' });
+    }
+
     const conversationData = {
       archived_at: new Date().toISOString(),
       message_count: messages.length,
@@ -51,7 +56,7 @@ Deno.serve(async (req) => {
 
     const jsonData = JSON.stringify(conversationData, null, 2);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const key = `${CONVERSATIONS_CONTAINER}/archive-${timestamp}.json`;
+    const key = `conversations-archive/archive-${timestamp}.json`;
 
     await s3.send(new PutObjectCommand({
       Bucket: BUCKET,
@@ -63,8 +68,8 @@ Deno.serve(async (req) => {
     const archive_url = `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
     console.log(`Archived ${messages.length} group chat messages to S3: ${key}`);
 
-    return Response.json({ 
-      success: true, 
+    return Response.json({
+      success: true,
       archived_count: messages.length,
       archive_url,
       timestamp: new Date().toISOString(),

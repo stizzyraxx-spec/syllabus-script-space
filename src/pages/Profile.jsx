@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -15,9 +15,9 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
       }
       setLoading(false);
@@ -28,7 +28,7 @@ export default function Profile() {
     queryKey: ["user-profile", user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.UserProfile.filter({ user_email: user.email }).then((d) => d[0])
+        ? db.entities.UserProfile.filter({ user_email: user.email }).then((d) => d[0])
         : Promise.resolve(null),
     enabled: !!user?.email,
   });
@@ -37,7 +37,7 @@ export default function Profile() {
     queryKey: ["game-scores", user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.GameScore.filter({ player_email: user.email }, "-created_date", 100)
+        ? db.entities.GameScore.filter({ player_email: user.email }, "-created_date", 100)
         : Promise.resolve([]),
     enabled: !!user?.email,
   });
@@ -46,7 +46,7 @@ export default function Profile() {
     queryKey: ["achievements", user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.PlayerAchievement.filter({ player_email: user.email })
+        ? db.entities.PlayerAchievement.filter({ player_email: user.email })
         : Promise.resolve([]),
     enabled: !!user?.email,
   });

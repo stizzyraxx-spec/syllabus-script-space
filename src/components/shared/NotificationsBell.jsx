@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, X, UserPlus, MessageCircle, Heart, AtSign, Zap, BookOpen } from "lucide-react";
 import { format } from "date-fns";
@@ -24,7 +24,7 @@ export default function NotificationsBell({ currentUser }) {
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications", currentUser?.email],
     queryFn: () =>
-      base44.entities.Notification.filter(
+      db.entities.Notification.filter(
         { recipient_email: currentUser.email },
         "-created_date",
         30
@@ -40,7 +40,7 @@ export default function NotificationsBell({ currentUser }) {
       await Promise.all(
         notifications
           .filter((n) => !n.read)
-          .map((n) => base44.entities.Notification.update(n.id, { read: true }))
+          .map((n) => db.entities.Notification.update(n.id, { read: true }))
       );
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications", currentUser?.email] }),

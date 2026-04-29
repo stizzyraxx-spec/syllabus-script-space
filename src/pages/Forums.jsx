@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Plus, MessageSquare, Rss, BookMarked, Sparkles, Gamepad2, Newspaper } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
@@ -53,9 +53,9 @@ export default function Forums() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
       }
     });
@@ -63,18 +63,18 @@ export default function Forums() {
 
   const { data: posts = [] } = useQuery({
     queryKey: ["forum-posts"],
-    queryFn: () => base44.entities.ForumPost.list("-created_date", 50),
+    queryFn: () => db.entities.ForumPost.list("-created_date", 50),
   });
 
   const { data: myProfile } = useQuery({
     queryKey: ["my-profile", user?.email],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: user.email }),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: user.email }),
     select: (data) => data[0],
     enabled: !!user?.email,
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.ForumPost.create(data),
+    mutationFn: (data) => db.entities.ForumPost.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["forum-posts"] });
       setShowNewPost(false);

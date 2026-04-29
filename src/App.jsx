@@ -12,6 +12,7 @@ import AppLayout from './components/layout/AppLayout';
 import Home from './pages/Home';
 import LoginPage from './pages/LoginPage';
 import AuthCallback from './pages/AuthCallback';
+import ResetPassword from './pages/ResetPassword';
 import RequireAuth from './components/shared/RequireAuth';
 
 // Lazy load heavy routes
@@ -28,7 +29,7 @@ const BiblePlansMain = lazy(() => import('./pages/BiblePlansMain'));
 const Moderation = lazy(() => import('./pages/Moderation'));
 const Discovery = lazy(() => import('./pages/Discovery'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
-import Games from './pages/Games.jsx';
+const Games = lazy(() => import('./pages/Games.jsx'));
 const Prayer = lazy(() => import('./pages/Prayer'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/forums" element={<RequireAuth><Suspense fallback={LoadingFallback}><Forums /></Suspense></RequireAuth>} />

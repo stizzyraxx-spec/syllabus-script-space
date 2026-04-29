@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Plus, X, Loader2, Heart, Trash2, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,13 +25,13 @@ export default function BibleJournal({ user, onClose }) {
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["bible-journal", user?.email],
     queryFn: () => user?.email 
-      ? base44.entities.BibleJournal.filter({ user_email: user.email }, "-created_date")
+      ? db.entities.BibleJournal.filter({ user_email: user.email }, "-created_date")
       : Promise.resolve([]),
     enabled: !!user?.email,
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.BibleJournal.create({
+    mutationFn: (data) => db.entities.BibleJournal.create({
       user_email: user.email,
       ...data,
       tags: data.tags ? data.tags.split(",").map(t => t.trim()).filter(t => t) : [],
@@ -44,7 +44,7 @@ export default function BibleJournal({ user, onClose }) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.BibleJournal.update(selectedEntry.id, {
+    mutationFn: (data) => db.entities.BibleJournal.update(selectedEntry.id, {
       notes: data.notes,
       reflection: data.reflection,
       tags: data.tags ? data.tags.split(",").map(t => t.trim()).filter(t => t) : [],
@@ -59,7 +59,7 @@ export default function BibleJournal({ user, onClose }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.BibleJournal.delete(id),
+    mutationFn: (id) => db.entities.BibleJournal.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bible-journal", user?.email] });
       setSelectedEntry(null);

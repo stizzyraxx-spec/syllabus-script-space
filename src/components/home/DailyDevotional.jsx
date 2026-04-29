@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { RefreshCw, Loader2, Sun, BookOpen, MessageSquare, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -35,7 +35,7 @@ export default function DailyDevotional() {
 
     setLoading(true);
     try {
-      const res = await base44.functions.invoke("getDailyDevotional", {});
+      const res = await db.functions.invoke("getDailyDevotional", {});
       const result = res.data;
       if (result && result.title) {
         localStorage.setItem("daily_devotional", JSON.stringify({ date: getTodayKey(), data: result }));

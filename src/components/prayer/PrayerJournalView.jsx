@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Calendar, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +13,7 @@ export default function PrayerJournalView({ userEmail }) {
 
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["prayer-journal", userEmail],
-    queryFn: () => userEmail ? base44.entities.PrayerJournal.filter({ user_email: userEmail }) : Promise.resolve([]),
+    queryFn: () => userEmail ? db.entities.PrayerJournal.filter({ user_email: userEmail }) : Promise.resolve([]),
     enabled: !!userEmail,
   });
 

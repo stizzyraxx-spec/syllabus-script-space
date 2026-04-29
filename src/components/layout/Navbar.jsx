@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { BookOpen, Menu, X, Sun, Moon, Settings, Shield, HelpCircle, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useTheme } from "@/lib/ThemeContext";
 import { GuidanceContext } from "@/lib/GuidanceContext";
 import NotificationsBell from "@/components/shared/NotificationsBell";
@@ -21,12 +21,12 @@ export default function Navbar() {
   const { guidanceEnabled, setGuidanceEnabled } = useContext(GuidanceContext);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
         // Fetch user's profile to get avatar
-        const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
+        const profiles = await db.entities.UserProfile.filter({ user_email: me.email });
         if (profiles.length > 0) {
           setUserProfile(profiles[0]);
         }
@@ -114,7 +114,7 @@ export default function Navbar() {
                 <button
                   onClick={() => setShowProfile(true)}
                   className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-accent font-display font-bold text-sm hover:opacity-80 transition-opacity flex-shrink-0 border border-accent/30"
-                  style={{ backgroundColor: userProfile?.avatar_url ? "transparent" : "var(--accent)/30" }}
+                  style={{ backgroundColor: userProfile?.avatar_url ? "transparent" : undefined }}
                   title="My Profile"
                 >
                   {userProfile?.avatar_url ? (
@@ -124,7 +124,7 @@ export default function Navbar() {
                   )}
                 </button>
                 <button
-                  onClick={() => base44.auth.logout()}
+                  onClick={() => db.auth.logout()}
                   className="font-body text-xs text-primary-foreground/50 hover:text-accent transition-colors"
                 >
                   Sign Out
@@ -133,7 +133,7 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => base44.auth.redirectToLogin()}
+                  onClick={() => db.auth.redirectToLogin()}
                   className="font-body text-sm text-primary-foreground/70 hover:text-accent transition-colors"
                 >
                   Sign In
@@ -300,7 +300,7 @@ export default function Navbar() {
                   Help
                 </button>
                 <button
-                  onClick={() => base44.auth.logout()}
+                  onClick={() => db.auth.logout()}
                   className="font-body text-xl text-primary-foreground/70 hover:text-accent transition-colors py-2 px-4"
                 >
                   Sign Out
@@ -316,7 +316,7 @@ export default function Navbar() {
                   Help
                 </button>
                 <button
-                  onClick={() => base44.auth.redirectToLogin()}
+                  onClick={() => db.auth.redirectToLogin()}
                   className="font-body text-xl text-primary-foreground/70 hover:text-accent transition-colors py-2 px-4"
                 >
                   Sign In

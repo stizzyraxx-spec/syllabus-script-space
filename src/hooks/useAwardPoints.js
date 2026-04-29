@@ -1,9 +1,9 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/supabaseClient';
 
 export const useAwardPoints = () => {
   const awardPoints = async (userEmail, actionType, pointsAmount = 1) => {
     try {
-      const response = await base44.functions.invoke('awardPoints', {
+      const response = await db.functions.invoke('awardPoints', {
         userEmail,
         actionType,
         pointsAmount,

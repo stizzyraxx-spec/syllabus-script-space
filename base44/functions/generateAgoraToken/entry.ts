@@ -1,5 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-
 // RtcTokenBuilder for generating Agora tokens
 class RtcTokenBuilder {
   static buildTokenWithUid(appId, appCertificate, channelName, uid, role, privileges = {}, expireTime = 3600) {
@@ -47,7 +45,6 @@ class RtcTokenBuilder {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
     const { channelName, uid, role } = await req.json();
 
     if (!channelName || uid === undefined) {

@@ -1,18 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { base44 } from "@/api/base44Client";
 import { Sparkles } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function RequireAuth({ children }) {
-  const [status, setStatus] = React.useState("checking"); // checking | authed | guest
+  const { isAuthenticated, isLoadingAuth } = useAuth();
 
-  React.useEffect(() => {
-    base44.auth.me()
-      .then(() => setStatus("authed"))
-      .catch(() => setStatus("guest"));
-  }, []);
-
-  if (status === "checking") {
+  if (isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
@@ -20,7 +14,7 @@ export default function RequireAuth({ children }) {
     );
   }
 
-  if (status === "guest") {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <motion.div

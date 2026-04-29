@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Radio, X, Users, Send, Loader2, PhoneOff, Gift, Share2, Heart, Trash2, Clock, Monitor, Settings, Eye, EyeOff, Music, Filter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,14 +38,14 @@ export default function LiveHostView({ user, onEnd }) {
 
   const { data: myProfile } = useQuery({
     queryKey: ["my-profile", user?.email],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: user.email }),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: user.email }),
     select: (d) => d[0],
     enabled: !!user?.email,
   });
 
   const { data: comments = [] } = useQuery({
     queryKey: ["live-comments", streamId],
-    queryFn: () => base44.entities.LiveComment.filter({ stream_id: streamId }, "created_date", 50),
+    queryFn: () => db.entities.LiveComment.filter({ stream_id: streamId }, "created_date", 50),
     enabled: !!streamId,
     refetchInterval: 2000,
   });
@@ -135,7 +135,7 @@ export default function LiveHostView({ user, onEnd }) {
       setCameraError(true);
     }
     // Create stream record
-    const stream = await base44.entities.LiveStream.create({
+    const stream = await db.entities.LiveStream.create({
       host_email: user.email,
       host_name: myProfile?.display_name || user.full_name || "Host",
       host_avatar: myProfile?.avatar_url || null,
@@ -149,7 +149,7 @@ export default function LiveHostView({ user, onEnd }) {
     
     // Generate Agora token for host
     try {
-      const tokenRes = await base44.functions.invoke('generateAgoraToken', {
+      const tokenRes = await db.functions.invoke('generateAgoraToken', {
         channelName: `channel_${stream.id}`,
         uid: Date.now(),
         role: 'host'
@@ -169,7 +169,7 @@ export default function LiveHostView({ user, onEnd }) {
     }, 1000);
     
     // Post join comment
-    await base44.entities.LiveComment.create({
+    await db.entities.LiveComment.create({
       stream_id: stream.id,
       author_email: user.email,
       author_name: myProfile?.display_name || user.full_name || "Host",
@@ -192,7 +192,7 @@ export default function LiveHostView({ user, onEnd }) {
     }
     
     if (streamId) {
-      await base44.entities.LiveStream.update(streamId, { status: "ended" });
+      await db.entities.LiveStream.update(streamId, { status: "ended" });
     }
     queryClient.invalidateQueries({ queryKey: ["live-streams"] });
     onEnd();
@@ -205,12 +205,12 @@ export default function LiveHostView({ user, onEnd }) {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const videoData = e.target.result;
-        const response = await base44.functions.invoke('saveLiveVideo', {
+        const response = await db.functions.invoke('saveLiveVideo', {
           videoData,
           fileName: `stream_${streamId}.webm`,
         });
         if (response.data.file_url) {
-          await base44.entities.LiveStream.update(streamId, { 
+          await db.entities.LiveStream.update(streamId, { 
             video_url: response.data.file_url 
           });
           queryClient.invalidateQueries({ queryKey: ["live-streams"] });
@@ -225,7 +225,7 @@ export default function LiveHostView({ user, onEnd }) {
   const deleteVideo = async (streamId) => {
     if (!window.confirm('Delete this video?')) return;
     try {
-      await base44.entities.LiveStream.update(streamId, { video_url: null });
+      await db.entities.LiveStream.update(streamId, { video_url: null });
       queryClient.invalidateQueries({ queryKey: ["live-streams"] });
     } catch (error) {
       console.error('Failed to delete video:', error.message);
@@ -234,7 +234,7 @@ export default function LiveHostView({ user, onEnd }) {
 
   const sendComment = async () => {
     if (!comment.trim() || !streamId) return;
-    await base44.entities.LiveComment.create({
+    await db.entities.LiveComment.create({
       stream_id: streamId,
       author_email: user.email,
       author_name: myProfile?.display_name || user.full_name || "Host",

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Gift, Flame, Lock } from "lucide-react";
 import { motion } from "framer-motion";
@@ -12,7 +12,7 @@ export default function DailyBonusCard({ userEmail }) {
     queryKey: ["daily-bonus", userEmail],
     queryFn: () =>
       userEmail
-        ? base44.entities.DailyBonus.filter({
+        ? db.entities.DailyBonus.filter({
             player_email: userEmail,
             bonus_date: new Date().toISOString().split("T")[0],
           })
@@ -25,7 +25,7 @@ export default function DailyBonusCard({ userEmail }) {
     queryKey: ["last-bonus", userEmail],
     queryFn: () =>
       userEmail
-        ? base44.entities.DailyBonus.filter(
+        ? db.entities.DailyBonus.filter(
             { player_email: userEmail },
             "-created_date",
             1
@@ -35,7 +35,7 @@ export default function DailyBonusCard({ userEmail }) {
   });
 
   const claimMutation = useMutation({
-    mutationFn: () => base44.functions.invoke("claimDailyBonus", {}),
+    mutationFn: () => db.functions.invoke("claimDailyBonus", {}),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["daily-bonus", userEmail] });
       queryClient.invalidateQueries({ queryKey: ["player-coins", userEmail] });

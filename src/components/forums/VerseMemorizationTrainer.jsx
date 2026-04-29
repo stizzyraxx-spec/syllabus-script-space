@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { Loader2, CheckCircle2, XCircle, RefreshCw, ChevronRight, Brain, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAwardPoints } from "@/hooks/useAwardPoints";
@@ -46,7 +46,7 @@ export default function VerseMemorizationTrainer({ user }) {
     setFinished(false);
 
     try {
-      const res = await base44.functions.invoke("generateMemorizationQuestions", {
+      const res = await db.functions.invoke("generateMemorizationQuestions", {
         count: questionCount,
         difficulty,
       });
@@ -95,9 +95,9 @@ export default function VerseMemorizationTrainer({ user }) {
 
   const saveScore = async (finalScore) => {
     try {
-      const currentUser = await base44.auth.me();
+      const currentUser = await db.auth.me();
       if (currentUser) {
-        await base44.entities.GameScore.create({
+        await db.entities.GameScore.create({
           player_email: currentUser.email,
           player_name: currentUser.full_name,
           game_type: "memorization",

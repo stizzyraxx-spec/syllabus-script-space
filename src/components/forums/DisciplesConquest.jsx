@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1319,7 +1319,7 @@ export default function DisciplesConquest({ user }) {
     mutationFn: async (finalScore) => {
       if (!user) return;
       const character = CHARACTERS.find((c) => c.id === selectedCharacter);
-      await base44.entities.GameScore.create({
+      await db.entities.GameScore.create({
         player_email: user.email,
         player_name: user.full_name,
         game_type: "disciples_conquest",
@@ -1335,14 +1335,14 @@ export default function DisciplesConquest({ user }) {
   const saveProgressMutation = useMutation({
     mutationFn: async (progressData) => {
       if (!user) return;
-      const existing = await base44.entities.GameProgress.filter({
+      const existing = await db.entities.GameProgress.filter({
         player_email: user.email,
         character_id: selectedCharacter,
       });
       if (existing.length > 0) {
-        await base44.entities.GameProgress.update(existing[0].id, progressData);
+        await db.entities.GameProgress.update(existing[0].id, progressData);
       } else {
-        await base44.entities.GameProgress.create({
+        await db.entities.GameProgress.create({
           player_email: user.email,
           character_id: selectedCharacter,
           ...progressData,
@@ -1354,7 +1354,7 @@ export default function DisciplesConquest({ user }) {
   const loadProgressMutation = useMutation({
     mutationFn: async (charId) => {
       if (!user) return null;
-      const progress = await base44.entities.GameProgress.filter({
+      const progress = await db.entities.GameProgress.filter({
         player_email: user.email,
         character_id: charId,
       });
@@ -1420,12 +1420,12 @@ export default function DisciplesConquest({ user }) {
 
   const handleReset = async () => {
     if (selectedCharacter && user) {
-      const existing = await base44.entities.GameProgress.filter({
+      const existing = await db.entities.GameProgress.filter({
         player_email: user.email,
         character_id: selectedCharacter,
       });
       if (existing.length > 0) {
-        await base44.entities.GameProgress.delete(existing[0].id);
+        await db.entities.GameProgress.delete(existing[0].id);
       }
     }
     setGameState("intro");

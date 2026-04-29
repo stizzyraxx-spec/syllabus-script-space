@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const ACHIEVEMENT_DEFINITIONS = [
@@ -136,7 +136,7 @@ export function useAchievements(playerEmail, playerStats) {
   const { data: playerAchievements } = useQuery({
     queryKey: ["player-achievements", playerEmail],
     queryFn: () =>
-      base44.entities.PlayerAchievement.filter({
+      db.entities.PlayerAchievement.filter({
         player_email: playerEmail,
       }),
   });
@@ -157,13 +157,13 @@ export function useAchievements(playerEmail, playerStats) {
       );
 
       if (existingRecord) {
-        await base44.entities.PlayerAchievement.update(existingRecord.id, {
+        await db.entities.PlayerAchievement.update(existingRecord.id, {
           is_unlocked: true,
           unlocked_date: new Date().toISOString(),
           progress: 100,
         });
       } else {
-        await base44.entities.PlayerAchievement.create({
+        await db.entities.PlayerAchievement.create({
           player_email: playerEmail,
           achievement_id: achievementId,
           is_unlocked: true,

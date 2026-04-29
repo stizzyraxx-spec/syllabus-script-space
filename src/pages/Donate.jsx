@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Heart, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 const tiers = [];
 
@@ -26,7 +26,7 @@ export default function Donate() {
       return;
     }
     setLoadingAmount(amount);
-    const response = await base44.functions.invoke("createCheckout", {
+    const response = await db.functions.invoke("createCheckout", {
       amount,
       description: `$${amount} Donation — The Condition of Man`,
     });

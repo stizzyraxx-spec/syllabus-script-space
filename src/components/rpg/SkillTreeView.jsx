@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Lock, Unlock, Zap } from "lucide-react";
@@ -55,7 +55,7 @@ export default function SkillTreeView({ playerEmail, progress, onBack }) {
   const { data: unlockedNodes } = useQuery({
     queryKey: ["skill-tree", playerEmail],
     queryFn: () =>
-      base44.entities.PlayerSkillTree.filter({
+      db.entities.PlayerSkillTree.filter({
         player_email: playerEmail,
       }),
   });
@@ -73,7 +73,7 @@ export default function SkillTreeView({ playerEmail, progress, onBack }) {
         if (!prereqUnlocked) throw new Error("Prerequisite not met");
       }
 
-      await base44.entities.PlayerSkillTree.create({
+      await db.entities.PlayerSkillTree.create({
         player_email: playerEmail,
         node_id: node.id,
         node_name: node.name,
@@ -81,7 +81,7 @@ export default function SkillTreeView({ playerEmail, progress, onBack }) {
       });
 
       // Deduct XP
-      await base44.entities.RPGPlayerProgress.update(progress.id, {
+      await db.entities.RPGPlayerProgress.update(progress.id, {
         xp: progress.xp - node.cost,
       });
     },

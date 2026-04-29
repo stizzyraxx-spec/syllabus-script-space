@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import BiblePlansHub from "@/components/bibleplans/BiblePlansHub";
 import PlanOverview from "@/components/bibleplans/PlanOverview";
 import PlanStudyView from "@/components/bibleplans/PlanStudyView";
@@ -11,9 +11,9 @@ export default function BiblePlansMain() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
       }
     });

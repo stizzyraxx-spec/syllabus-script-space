@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 const ThemeContext = createContext();
 
@@ -48,10 +48,10 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     const loadAccentColorFromProfile = async () => {
       try {
-        const isAuthed = await base44.auth.isAuthenticated();
+        const isAuthed = await db.auth.isAuthenticated();
         if (isAuthed) {
-          const user = await base44.auth.me();
-          const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+          const user = await db.auth.me();
+          const profiles = await db.entities.UserProfile.filter({ user_email: user.email });
           if (profiles.length > 0 && profiles[0].accent_color) {
             setAccentColorState(profiles[0].accent_color);
             localStorage.setItem("accentColor", profiles[0].accent_color);
@@ -83,12 +83,12 @@ export function ThemeProvider({ children }) {
     localStorage.setItem("accentColor", hex);
     // Save to user profile if authenticated
     try {
-      const isAuthed = await import("@/api/base44Client").then(m => m.base44.auth.isAuthenticated());
+      const isAuthed = await db.auth.isAuthenticated();
       if (isAuthed) {
-        const user = await import("@/api/base44Client").then(m => m.base44.auth.me());
-        const profiles = await import("@/api/base44Client").then(m => m.base44.entities.UserProfile.filter({ user_email: user.email }));
+        const user = await db.auth.me();
+        const profiles = await db.entities.UserProfile.filter({ user_email: user.email });
         if (profiles.length > 0) {
-          await import("@/api/base44Client").then(m => m.base44.entities.UserProfile.update(profiles[0].id, { accent_color: hex }));
+          await db.entities.UserProfile.update(profiles[0].id, { accent_color: hex });
         }
       }
     } catch (error) {

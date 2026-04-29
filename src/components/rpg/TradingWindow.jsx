@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Package, AlertCircle } from "lucide-react";
@@ -21,7 +21,7 @@ export default function TradingWindow({
   const { data: myInventory } = useQuery({
     queryKey: ["inventory", playerEmail],
     queryFn: () =>
-      base44.entities.PlayerInventory.filter({
+      db.entities.PlayerInventory.filter({
         player_email: playerEmail,
       }),
   });
@@ -30,7 +30,7 @@ export default function TradingWindow({
   const { data: theirInventory } = useQuery({
     queryKey: ["inventory", otherPlayerEmail],
     queryFn: () =>
-      base44.entities.PlayerInventory.filter({
+      db.entities.PlayerInventory.filter({
         player_email: otherPlayerEmail,
       }),
   });
@@ -38,7 +38,7 @@ export default function TradingWindow({
   // Fetch items data
   const { data: items } = useQuery({
     queryKey: ["items"],
-    queryFn: () => base44.entities.Item.list(),
+    queryFn: () => db.entities.Item.list(),
   });
 
   // Find active trade between these two players

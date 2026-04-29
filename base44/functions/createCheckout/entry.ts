@@ -1,5 +1,4 @@
 import Stripe from 'npm:stripe@14.21.0';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
@@ -11,7 +10,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    const origin = req.headers.get("origin") || "https://app.base44.app";
+    const origin = req.headers.get("origin") || "https://theconditionofman.com";
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -31,9 +30,7 @@ Deno.serve(async (req) => {
       ],
       success_url: `${origin}/donate?success=true`,
       cancel_url: `${origin}/donate?cancelled=true`,
-      metadata: {
-        base44_app_id: Deno.env.get("BASE44_APP_ID"),
-      },
+      metadata: {},
     });
 
     return Response.json({ url: session.url });

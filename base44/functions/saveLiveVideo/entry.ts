@@ -1,14 +1,18 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID');
-const AWS_SECRET_ACCESS_KEY = Deno.env.get('AWS_SECRET_ACCESS_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+
 const AWS_S3_REGION = Deno.env.get('AWS_S3_REGION');
 const AWS_S3_BUCKET_NAME = Deno.env.get('AWS_S3_BUCKET_NAME');
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -20,7 +24,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing videoData or fileName' }, { status: 400 });
     }
 
-    // Convert base64 to buffer
     const base64Data = videoData.split(',')[1] || videoData;
     const binaryString = atob(base64Data);
     const bytes = new Uint8Array(binaryString.length);
@@ -29,13 +32,7 @@ Deno.serve(async (req) => {
     }
     const videoBuffer = bytes.buffer;
 
-    // Upload to S3
     const s3Key = `live-videos/${user.email}/${Date.now()}_${fileName}`;
-    const command = new TextEncoder().encode(
-      `PUT /${s3Key} HTTP/1.1\nHost: ${AWS_S3_BUCKET_NAME}.s3.${AWS_S3_REGION}.amazonaws.com\nContent-Type: video/mp4\nContent-Length: ${videoBuffer.byteLength}\n\n`
-    );
-
-    // Use AWS SDK v3 via fetch
     const url = `https://${AWS_S3_BUCKET_NAME}.s3.${AWS_S3_REGION}.amazonaws.com/${s3Key}`;
     const signedRequest = await signS3Request('PUT', AWS_S3_BUCKET_NAME, s3Key, 'video/mp4', videoBuffer);
 
@@ -55,7 +52,6 @@ Deno.serve(async (req) => {
     }
 
     const file_url = `https://${AWS_S3_BUCKET_NAME}.s3.${AWS_S3_REGION}.amazonaws.com/${s3Key}`;
-
     return Response.json({ file_url });
   } catch (error) {
     console.error('Error saving video:', error.message);

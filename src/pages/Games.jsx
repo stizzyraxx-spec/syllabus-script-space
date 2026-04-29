@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useSearchParams } from "react-router-dom";
 import GamesHub from "@/components/forums/GamesHub";
 
@@ -8,8 +8,8 @@ export default function Games() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
-      if (authed) setUser(await base44.auth.me());
+    db.auth.isAuthenticated().then(async (authed) => {
+      if (authed) setUser(await db.auth.me());
     });
   }, []);
 

@@ -1,177 +1,65 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+const MISSIONS = [
+  {
+    title: "A Test of Forgiveness",
+    location: "Jerusalem",
+    narrative: "A brother in your community has wronged you publicly and damaged your reputation. He has now come to ask forgiveness, but your heart is still wounded. Others are watching how you respond.",
+    decisions: [
+      { text: "Forgive him freely and immediately, just as Christ forgave you, without requiring him to earn it back.", moralAlignment: "righteous", xp: 25, scoreChanges: { faith_score: 10, wisdom_score: 8, obedience_score: 8 }, consequence: "True forgiveness reflects the grace of God — unconditional and complete. Your obedience to Christ's command freed both you and your brother from the bondage of bitterness. (Colossians 3:13)", scripture: "Ephesians 4:32" },
+      { text: "Tell him you forgive him, but keep your distance until you see real change in his behavior over time.", moralAlignment: "neutral", xp: 16, scoreChanges: { faith_score: 5, wisdom_score: 6, obedience_score: 4 }, consequence: "Caution after betrayal can be wise, but conditional forgiveness withholds the grace Christ modeled. Forgiveness and trust are different — you can extend one without immediately rebuilding the other.", scripture: "Matthew 18:21-22" },
+      { text: "Confront him with your hurt first before extending forgiveness, so he understands the full weight of what he did.", moralAlignment: "neutral", xp: 12, scoreChanges: { faith_score: 3, wisdom_score: 7, obedience_score: 2 }, consequence: "While honesty is valuable, using the confrontation as a condition for forgiveness subtly places your emotional satisfaction above obedience to God's command. Forgiveness is not primarily for the offender — it frees you.", scripture: "Luke 17:3-4" },
+    ],
+  },
+  {
+    title: "The Widow's Need",
+    location: "Capernaum",
+    narrative: "A widow in your congregation has a genuine financial need. You have limited resources yourself, but God is prompting your heart to give. You pray and feel the nudge clearly.",
+    decisions: [
+      { text: "Give sacrificially in obedience to God's prompting, trusting Him to meet your own needs in return.", moralAlignment: "righteous", xp: 25, scoreChanges: { faith_score: 10, wisdom_score: 7, obedience_score: 10 }, consequence: "The widow who gave her last two mites gave more than all the wealthy donors — not because of the amount, but because of the faith it required. Obedience to God's clear prompting honors Him and builds deep trust. (Luke 21:1-4)", scripture: "2 Corinthians 9:7" },
+      { text: "Give a portion that feels comfortable, keeping enough to cover your own obligations first.", moralAlignment: "neutral", xp: 14, scoreChanges: { faith_score: 4, wisdom_score: 6, obedience_score: 4 }, consequence: "Practical stewardship is wise, but giving what is comfortable rarely requires faith. The prompting was toward sacrifice — settling for comfort may have been managing God's call rather than obeying it.", scripture: "Proverbs 11:24" },
+      { text: "Pray for her needs instead of giving, trusting that God will provide for her another way.", moralAlignment: "neutral", xp: 8, scoreChanges: { faith_score: 3, wisdom_score: 4, integrity_score: -3 }, consequence: "James 2:15-16 warns: if a brother or sister is naked and hungry and you say 'Go in peace, be warmed' without meeting their need, what does that profit? Prayer without action when God has given you means to act is incomplete obedience.", scripture: "James 2:15-17" },
+    ],
+  },
+  {
+    title: "Speaking Truth in Love",
+    location: "Antioch",
+    narrative: "A close friend is living in a pattern of sin that is harming him and those around him. He seems unaware that others have noticed. You have a private opportunity to speak to him.",
+    decisions: [
+      { text: "Speak the truth to him gently but clearly, motivated by genuine love for his soul, not reputation or correction.", moralAlignment: "righteous", xp: 25, scoreChanges: { faith_score: 8, wisdom_score: 10, obedience_score: 9 }, consequence: "Faithful are the wounds of a friend (Proverbs 27:6). Speaking truth in love is costly — it risks the friendship — but it serves your friend's eternal good over temporal comfort. This is the highest form of friendship.", scripture: "Ephesians 4:15" },
+      { text: "Stay silent to preserve the friendship, trusting God to deal with him in his own timing.", moralAlignment: "neutral", xp: 10, scoreChanges: { faith_score: 2, wisdom_score: 4, integrity_score: -4 }, consequence: "Silence in the face of a friend's sin can masquerade as patience or humility, but Ezekiel 3:18 warns that failing to warn those in sin makes us responsible. Discomfort in the friendship is not a sufficient reason to withhold truth.", scripture: "Galatians 6:1" },
+      { text: "Bring the matter to the church elders first so that the confrontation carries more authority.", moralAlignment: "neutral", xp: 14, scoreChanges: { faith_score: 5, wisdom_score: 7, obedience_score: 3 }, consequence: "Matthew 18 instructs going privately first before involving others. Escalating to elders without a private conversation skips the first step and can feel like ambush rather than restoration. Your private word was the right and loving first move.", scripture: "Matthew 18:15" },
+    ],
+  },
+];
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const { character, sessionId, missionCount, completedThemes = [], theologianMode = false, locationName = "Jerusalem", locationContext = "", locationRegion = "" } = await req.json();
+    const { completedThemes = [] } = await req.json().catch(() => ({}));
+    const available = MISSIONS.filter(m => !completedThemes.includes(m.title));
+    const pool = available.length > 0 ? available : MISSIONS;
+    const mission = shuffle(pool)[0];
+    const shuffledDecisions = shuffle([...mission.decisions]);
+    const correctIndex = shuffledDecisions.findIndex(d => d.moralAlignment === "righteous");
 
-    const locationCtx = locationContext
-      ? `\nLocation: ${locationName} (${locationRegion})\nSetting: ${locationContext}\nIMPORTANT: Set this mission specifically in ${locationName}, using its biblical events, culture, and themes.`
-      : "";
-
-    // Always use moral_choice — multiple choice decisions only
-    const missionType = "moral_choice";
-
-    const uniqueSeed = `[Session: ${sessionId}, Mission #${missionCount}, Timestamp: ${Date.now()}]`;
-    const avoidThemes = completedThemes.length > 0 ? `Avoid these already-used themes: ${completedThemes.join(", ")}.` : "";
-
-    let prompt = "";
-
-    if (missionType === "moral_choice") {
-      prompt = `You are generating a unique mission for a faith-based biblical RPG. ${uniqueSeed}
-
-Player Character: ${character}
-Mission #: ${missionCount}
-${locationCtx}
-${avoidThemes}
-
-MISSION DESIGN REQUIREMENTS — READ CAREFULLY:
-
-Create a morally complex biblical scenario with exactly 3 multiple-choice answers. The defining challenge: ALL THREE choices must sound almost equally righteous, godly, and biblically grounded on the surface. Every option must be something a sincere, mature Christian could plausibly defend using Scripture.
-
-The player must use ADVANCED LOGICAL REASONING and deep theological understanding to identify the ONE truly correct answer. This is NOT about spotting obvious sin — it is about discerning subtle distinctions between:
-- Partial truth vs. full truth
-- Good intentions with flawed theology vs. right action from right understanding
-- Prioritizing one virtue while neglecting another
-- Applying a verse correctly vs. applying it out of covenantal context
-
-RULES FOR EACH OPTION:
-1. Every option must cite or allude to a real biblical principle
-2. Every option must sound like something a devout, scripture-reading believer would say
-3. The WRONG options must contain a subtle theological flaw — not a moral failing, but a reasoning error, a misapplied verse, or a misunderstanding of God's character/covenant
-4. The CORRECT option must align with: the full counsel of Scripture, the character of God, the specific context of the scenario, and sound theological reasoning
-
-${theologianMode
-  ? `THEOLOGIAN DIFFICULTY EXTRAS:
-- Build the scenario around an obscure or contested theological tension (e.g. the interplay of grace and obedience in Galatians, the nature of imputed righteousness in Romans 4, Daniel's prayer while God's decree was already set)
-- The incorrect options must each reflect a recognizable heretical tendency (e.g. semi-Pelagianism, antinomianism, moralism, cessationism misapplied)
-- The consequence reveal must explain the precise theological error of each wrong answer
-- Scoring: CORRECT (15 xp, +7 faith, +6 wisdom, +4 obedience) | CLOSE (5 xp, +2 faith, +2 wisdom) | WRONG (0 xp, -5 obedience, -3 integrity)`
-  : `STANDARD DIFFICULTY EXTRAS:
-- Each wrong answer should appeal to a real virtue (e.g. humility, compassion, boldness) but apply it in a way that misses a deeper principle
-- The consequence reveal must explain WHY the correct answer is superior, with theological depth — not just "this was better"
-- Scoring: CORRECT (25 xp, +10 faith, +10 wisdom, +8 obedience) | CLOSE (16 xp, +6 faith, +5 wisdom, +3 obedience) | WRONG (8 xp, +2 faith, -4 integrity, +1 wisdom)`}
-
-Generate exactly 3 options. For each: text (a compelling, godly-sounding choice — 1-2 sentences), moralAlignment (righteous/neutral/fallen), xp, scoreChanges (object with stat keys), consequence (a rich theological explanation of why this was right or where it went wrong, 2-3 sentences), scripture (a specific Bible verse that supports OR complicates this choice).`;
-
-    } else if (missionType === "fetch_quest") {
-      prompt = `You are generating a unique fetch quest for a faith-based biblical RPG. ${uniqueSeed}
-
-Player Character: ${character}
-Mission #: ${missionCount}
-${locationCtx}
-${avoidThemes}
-
-Invent a COMPLETELY ORIGINAL quest where the player must retrieve something spiritually significant. Choose a fresh theme and scripture reference.
-
-The quest should:
-1. Feature a unique sacred item (scroll, relic, offering, artifact, key, etc.) tied to scripture
-2. Be set in a specific biblical location with vivid atmosphere
-3. Have 3-4 distinct waypoints/locations to visit
-4. Be written in second-person, immersive and engaging
-5. Include a meaningful completion message tied to the scripture lesson
-
-Provide: title, location, narrative (2-3 paragraphs), scripture (the verse), objective (what to fetch), locations (array of 3-4 place names), reward_xp (40-60), scoreChanges (faith_score, wisdom_score, obedience_score, integrity_score), completionMessage.`;
-
-    } else {
-      prompt = `You are generating a unique timed challenge for a faith-based biblical RPG. ${uniqueSeed}
-
-Player Character: ${character}
-Mission #: ${missionCount}
-${locationCtx}
-${avoidThemes}
-
-Invent a COMPLETELY ORIGINAL timed puzzle or riddle based on biblical knowledge. Choose a fresh theme and scripture.
-
-The challenge should:
-1. Require the player to answer a biblical riddle, sequence verses, or identify a scripture passage
-2. Be solvable in 60-90 seconds with effort
-3. Include 3 progressive hints that give away more each time
-4. Have a specific correct answer (a word, name, number, or short phrase)
-5. Be tied to a meaningful scripture lesson
-
-Provide: title, location, narrative (1-2 paragraphs), scripture (the verse), challenge (the actual puzzle text), timeLimit (60-90), hints (array of 3), correctAnswer, reward_xp (50-70), scoreChanges (faith_score, wisdom_score, obedience_score, integrity_score), successMessage, failureMessage.`;
-    }
-
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          location: { type: "string" },
-          narrative: { type: "string" },
-          decisions: { 
-            type: "array", 
-            items: { 
-              type: "object",
-              properties: {
-                text: { type: "string" },
-                moralAlignment: { type: "string" },
-                xp: { type: "number" },
-                scoreChanges: { type: "object" },
-                consequence: { type: "string" },
-                scripture: { type: "string" }
-              }
-            }
-          },
-          objective: { type: "string" },
-          locations: { type: "array", items: { type: "string" } },
-          challenge: { type: "string" },
-          timeLimit: { type: "number" },
-          hints: { type: "array", items: { type: "string" } },
-          correctAnswer: { type: "string" },
-          reward_xp: { type: "number" },
-          scoreChanges: { type: "object" },
-          successMessage: { type: "string" },
-          failureMessage: { type: "string" },
-          completionMessage: { type: "string" }
-        }
-      }
+    return Response.json({
+      title: mission.title,
+      location: mission.location,
+      narrative: mission.narrative,
+      missionType: "moral_choice",
+      reward_xp: 25,
+      decisions: shuffledDecisions,
+      correctIndex,
     });
-
-    let missionData = {
-      title: result.title || `A Trial of Faith`,
-      location: result.location || "Unseen Realm",
-      scripture: result.scripture || "Scripture Reference",
-      narrative: result.narrative,
-      missionType: missionType,
-      reward_xp: theologianMode ? Math.floor((result.reward_xp || 15) * 0.4) : (result.reward_xp || (missionType === "moral_choice" ? 25 : 50))
-    };
-
-    if (missionType === "moral_choice") {
-      const decisions = result.decisions || [
-        { text: "Seek God in prayer and wait for His clear direction before acting", moralAlignment: "righteous", xp: 25, scoreChanges: { faith_score: 10, wisdom_score: 8, obedience_score: 8 }, consequence: "You trusted God's timing and sought His will above your own understanding.", scripture: "Proverbs 3:5-6" },
-        { text: "Act boldly on what Scripture already commands, trusting God to honor obedience", moralAlignment: "neutral", xp: 16, scoreChanges: { faith_score: 6, wisdom_score: 4, obedience_score: 6 }, consequence: "Your boldness was admirable but you moved ahead of God's specific leading in this moment.", scripture: "Isaiah 28:16" },
-        { text: "Counsel with trusted elders and submit to their spiritual wisdom", moralAlignment: "neutral", xp: 10, scoreChanges: { faith_score: 4, wisdom_score: 7, obedience_score: 3 }, consequence: "Seeking counsel is wise, but in this case it substituted human wisdom for direct communion with God.", scripture: "Proverbs 11:14" }
-      ];
-      const shuffled = decisions.sort(() => Math.random() - 0.5);
-      const correctIndex = shuffled.findIndex(d => d.moralAlignment === "righteous");
-      missionData = { ...missionData, decisions: shuffled, correctIndex };
-    } else if (missionType === "fetch_quest") {
-      missionData = { 
-        ...missionData, 
-        objective: result.objective,
-        locations: result.locations || [],
-        scoreChanges: result.scoreChanges,
-        completionMessage: result.completionMessage
-      };
-    } else if (missionType === "timed_challenge") {
-      missionData = {
-        ...missionData,
-        challenge: result.challenge,
-        timeLimit: result.timeLimit || 75,
-        hints: result.hints || [],
-        correctAnswer: result.correctAnswer,
-        scoreChanges: result.scoreChanges,
-        successMessage: result.successMessage,
-        failureMessage: result.failureMessage
-      };
-    }
-
-    return Response.json(missionData);
   } catch (error) {
-    console.error("Error generating mission:", error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error("generateDynamicMission error:", (error as Error).message);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

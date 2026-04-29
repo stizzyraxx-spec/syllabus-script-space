@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { uploadFileToS3 } from "@/lib/uploadToS3";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, Camera, Save, Palette, Trash2 } from "lucide-react";
@@ -89,19 +89,19 @@ export default function EditProfileModal({ profile, currentUser, onClose }) {
      console.log("Saving profile with avatar_url:", form.avatar_url);
      const data = { ...form, user_email: currentUser.email };
      if (profile?.id) {
-       await base44.entities.UserProfile.update(profile.id, data);
+       await db.entities.UserProfile.update(profile.id, data);
      } else {
-       await base44.entities.UserProfile.create(data);
+       await db.entities.UserProfile.create(data);
      }
      // Apply the accent color to theme
      if (form.accent_color) {
        setAccentColor(form.accent_color);
      }
      // Backfill existing posts with updated name and avatar
-     const myPosts = await base44.entities.CommunityPost.filter({ author_email: currentUser.email });
+     const myPosts = await db.entities.CommunityPost.filter({ author_email: currentUser.email });
      if (myPosts.length > 0) {
        await Promise.all(myPosts.map((p) =>
-         base44.entities.CommunityPost.update(p.id, { author_name: form.display_name, author_avatar: form.avatar_url })
+         db.entities.CommunityPost.update(p.id, { author_name: form.display_name, author_avatar: form.avatar_url })
        ));
      }
    },

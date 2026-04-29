@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Heart, MessageCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +13,7 @@ export default function PlanStudyView({ planId, user }) {
 
   const { data: plan } = useQuery({
     queryKey: ["bible-plan", planId],
-    queryFn: () => base44.entities.BiblePlan.list("-created_date").then(
+    queryFn: () => db.entities.BiblePlan.list("-created_date").then(
       (plans) => plans.find((p) => p.id === planId)
     ),
   });
@@ -22,7 +22,7 @@ export default function PlanStudyView({ planId, user }) {
     queryKey: ["enrollment", planId, user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.UserPlanEnrollment.filter({
+        ? db.entities.UserPlanEnrollment.filter({
             user_email: user.email,
             plan_id: planId,
           }).then((e) => e[0])
@@ -39,7 +39,7 @@ export default function PlanStudyView({ planId, user }) {
   const { data: dayReflections = [] } = useQuery({
     queryKey: ["day-reflections", planId, currentDay],
     queryFn: () =>
-      base44.entities.PlanReflection.filter({
+      db.entities.PlanReflection.filter({
         plan_id: planId,
         day: currentDay,
       }),
@@ -53,7 +53,7 @@ export default function PlanStudyView({ planId, user }) {
         completed.push(currentDay);
       }
       const nextDay = Math.min(currentDay + 1, plan.duration_days);
-      await base44.entities.UserPlanEnrollment.update(enrollment.id, {
+      await db.entities.UserPlanEnrollment.update(enrollment.id, {
         current_day: nextDay,
         completed_days: completed,
         status:

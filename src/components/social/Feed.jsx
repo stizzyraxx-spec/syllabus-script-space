@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import VideoPlayer from "@/components/shared/VideoPlayer";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, UserPlus, UserCheck, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
@@ -21,18 +21,18 @@ export default function Feed({ currentUser, onViewProfile }) {
   const [openMenuId, setOpenMenuId] = useState(null);
 
   const deleteMutation = useMutation({
-    mutationFn: (postId) => base44.entities.CommunityPost.delete(postId),
+    mutationFn: (postId) => db.entities.CommunityPost.delete(postId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["community-posts"] }),
   });
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["community-posts"],
-    queryFn: () => base44.entities.CommunityPost.list("-created_date", 30),
+    queryFn: () => db.entities.CommunityPost.list("-created_date", 30),
   });
 
   const { data: allProfiles = [] } = useQuery({
     queryKey: ["all-profiles"],
-    queryFn: () => base44.entities.UserProfile.list(),
+    queryFn: () => db.entities.UserProfile.list(),
     enabled: !!currentUser,
   });
 
@@ -45,22 +45,22 @@ export default function Feed({ currentUser, onViewProfile }) {
 
   const followMutation = useMutation({
     mutationFn: async (authorEmail) => {
-      const authorProfiles = await base44.entities.UserProfile.filter({ user_email: authorEmail });
+      const authorProfiles = await db.entities.UserProfile.filter({ user_email: authorEmail });
       if (authorProfiles.length > 0) {
         const authorProfile = authorProfiles[0];
         const followers = authorProfile.followers || [];
         const already = followers.includes(currentUser?.email);
-        await base44.entities.UserProfile.update(authorProfile.id, {
+        await db.entities.UserProfile.update(authorProfile.id, {
           followers: already ? followers.filter((e) => e !== currentUser?.email) : [...followers, currentUser?.email],
         });
         if (myProfile) {
           const following = myProfile.following || [];
-          await base44.entities.UserProfile.update(myProfile.id, {
+          await db.entities.UserProfile.update(myProfile.id, {
             following: already ? following.filter((e) => e !== authorEmail) : [...following, authorEmail],
           });
         }
         if (!already) {
-          await base44.entities.Notification.create({
+          await db.entities.Notification.create({
             recipient_email: authorEmail,
             actor_name: currentUser?.full_name || "Someone",
             actor_email: currentUser?.email,
@@ -86,7 +86,7 @@ export default function Feed({ currentUser, onViewProfile }) {
         await awardPoints(currentUser.email, "like");
       }
       
-      return base44.entities.CommunityPost.update(post.id, {
+      return db.entities.CommunityPost.update(post.id, {
         likes: alreadyLiked ? (post.likes || 1) - 1 : (post.likes || 0) + 1,
         liked_by: alreadyLiked
           ? likedBy.filter((e) => e !== currentUser?.email)

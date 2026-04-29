@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Plus, ChevronDown, ChevronRight, Trash2, Pin, PinOff } from "lucide-react";
 
@@ -17,13 +17,13 @@ export default function NotebookModal({ userEmail, onClose }) {
   // Fetch all notes
   const { data: allNotes = [] } = useQuery({
     queryKey: ["notebook-entries", userEmail],
-    queryFn: () => base44.entities.NotebookEntry.filter({ user_email: userEmail }),
+    queryFn: () => db.entities.NotebookEntry.filter({ user_email: userEmail }),
     enabled: !!userEmail,
   });
 
   // Mutations
   const createNoteMutation = useMutation({
-    mutationFn: (noteData) => base44.entities.NotebookEntry.create(noteData),
+    mutationFn: (noteData) => db.entities.NotebookEntry.create(noteData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] });
       setShowNewNote(false);
@@ -34,7 +34,7 @@ export default function NotebookModal({ userEmail, onClose }) {
   });
 
   const updateNoteMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.NotebookEntry.update(id, data),
+    mutationFn: ({ id, data }) => db.entities.NotebookEntry.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] });
       setEditingNote(null);
@@ -42,7 +42,7 @@ export default function NotebookModal({ userEmail, onClose }) {
   });
 
   const deleteNoteMutation = useMutation({
-    mutationFn: (id) => base44.entities.NotebookEntry.delete(id),
+    mutationFn: (id) => db.entities.NotebookEntry.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] });
     },
@@ -50,7 +50,7 @@ export default function NotebookModal({ userEmail, onClose }) {
 
   const togglePinMutation = useMutation({
     mutationFn: ({ id, isPinned }) =>
-      base44.entities.NotebookEntry.update(id, { is_pinned: !isPinned }),
+      db.entities.NotebookEntry.update(id, { is_pinned: !isPinned }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notebook-entries", userEmail] });
     },

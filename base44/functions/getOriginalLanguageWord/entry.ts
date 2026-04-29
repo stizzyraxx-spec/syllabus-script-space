@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 // Dictionary of English words mapped to their original language equivalents
 const ORIGINAL_LANGUAGE_DICTIONARY = {
@@ -112,7 +111,7 @@ const ORIGINAL_LANGUAGE_DICTIONARY = {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+
     const body = await req.json();
     const searchWord = body.word?.toLowerCase().trim();
 

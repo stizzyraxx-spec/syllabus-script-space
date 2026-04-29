@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, X } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,7 +8,7 @@ export default function VerseCommentary({ book, chapter, verse, text, onClose })
   const { data, isLoading, isError } = useQuery({
     queryKey: ["commentary", book, chapter, verse],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getBibleCommentary", { book, chapter, verse, text });
+      const res = await db.functions.invoke("getBibleCommentary", { book, chapter, verse, text });
       if (res.data?.commentary) {
         return res.data;
       }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Zap, Shield } from "lucide-react";
@@ -28,7 +28,7 @@ export default function InventoryView({ playerEmail, character, progress, onBack
   const { data: inventoryItems } = useQuery({
     queryKey: ["inventory", playerEmail],
     queryFn: () =>
-      base44.entities.PlayerInventory.filter({
+      db.entities.PlayerInventory.filter({
         player_email: playerEmail,
       }),
   });
@@ -36,14 +36,14 @@ export default function InventoryView({ playerEmail, character, progress, onBack
   // Fetch all items
   const { data: allItems } = useQuery({
     queryKey: ["items"],
-    queryFn: () => base44.entities.Item.list(),
+    queryFn: () => db.entities.Item.list(),
   });
 
   // Toggle equip mutation
   const toggleEquipMutation = useMutation({
     mutationFn: async (inventoryId) => {
       const inventory = inventoryItems.find((inv) => inv.id === inventoryId);
-      await base44.entities.PlayerInventory.update(inventoryId, {
+      await db.entities.PlayerInventory.update(inventoryId, {
         equipped: !inventory.equipped,
       });
     },

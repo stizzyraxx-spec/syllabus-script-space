@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3';
 
 const s3 = new S3Client({
@@ -14,8 +14,13 @@ const REGION = Deno.env.get('AWS_S3_REGION');
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }

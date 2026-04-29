@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useOnlineStatus(playerEmail, playerName, characterId, level, location) {
@@ -8,17 +8,17 @@ export function useOnlineStatus(playerEmail, playerName, characterId, level, loc
   // Create/update active player status
   const updateStatusMutation = useMutation({
     mutationFn: async (statusData) => {
-      const existing = await base44.entities.ActivePlayer.filter({
+      const existing = await db.entities.ActivePlayer.filter({
         player_email: playerEmail,
       });
 
       if (existing && existing.length > 0) {
-        await base44.entities.ActivePlayer.update(existing[0].id, {
+        await db.entities.ActivePlayer.update(existing[0].id, {
           ...statusData,
           last_active: new Date().toISOString(),
         });
       } else {
-        await base44.entities.ActivePlayer.create({
+        await db.entities.ActivePlayer.create({
           player_email: playerEmail,
           ...statusData,
           is_online: true,
@@ -51,11 +51,11 @@ export function useOnlineStatus(playerEmail, playerName, characterId, level, loc
 
   // Go offline on unmount
   const goOffline = useCallback(async () => {
-    const existing = await base44.entities.ActivePlayer.filter({
+    const existing = await db.entities.ActivePlayer.filter({
       player_email: playerEmail,
     });
     if (existing && existing.length > 0) {
-      await base44.entities.ActivePlayer.update(existing[0].id, {
+      await db.entities.ActivePlayer.update(existing[0].id, {
         is_online: false,
       });
     }
@@ -73,7 +73,7 @@ export function useOnlinePlayers() {
   const { data: onlinePlayers } = useQuery({
     queryKey: ["online-players"],
     queryFn: () =>
-      base44.entities.ActivePlayer.filter({
+      db.entities.ActivePlayer.filter({
         is_online: true,
       }),
     refetchInterval: 15000, // Update every 15 seconds

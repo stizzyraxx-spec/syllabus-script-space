@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { X, Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
@@ -20,8 +20,8 @@ export default function ReportModal({ contentType, contentId, reportedUserEmail,
 
   const reportMutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
-      return base44.entities.ReportedContent.create({
+      const user = await db.auth.me();
+      return db.entities.ReportedContent.create({
         content_type: contentType,
         [contentType === "post" ? "post_id" : "comment_id"]: contentId,
         reported_user_email: reportedUserEmail,

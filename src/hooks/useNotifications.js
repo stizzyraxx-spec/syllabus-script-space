@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 export function useNotifications(playerEmail, playerName) {
   const notifiedIdsRef = useRef(new Set());
@@ -8,7 +8,7 @@ export function useNotifications(playerEmail, playerName) {
     if (!playerEmail) return;
 
     // Subscribe to trade requests
-    const unsubscribeTrades = base44.entities.Trade.subscribe((event) => {
+    const unsubscribeTrades = db.entities.Trade.subscribe((event) => {
       if (event.type === "create" && event.data) {
         const trade = event.data;
         const notificationId = `trade_${trade.id}`;
@@ -25,7 +25,7 @@ export function useNotifications(playerEmail, playerName) {
     });
 
     // Subscribe to messages (including party requests and coop invites)
-    const unsubscribeMessages = base44.entities.PlayerMessage.subscribe((event) => {
+    const unsubscribeMessages = db.entities.PlayerMessage.subscribe((event) => {
       if (event.type === "create" && event.data) {
         const message = event.data;
         const notificationId = `message_${message.id}`;
@@ -52,7 +52,7 @@ export function useNotifications(playerEmail, playerName) {
     });
 
     // Subscribe to world boss events
-    const unsubscribeBoss = base44.entities.WorldBoss.subscribe((event) => {
+    const unsubscribeBoss = db.entities.WorldBoss.subscribe((event) => {
       if (event.type === "create" && event.data) {
         const boss = event.data;
         const notificationId = `boss_${boss.id}`;

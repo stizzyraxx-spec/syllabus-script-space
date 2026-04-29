@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart, MessageCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -13,7 +13,7 @@ export default function ReflectionPanel({ reflection, currentUser }) {
   const { data: comments = [] } = useQuery({
     queryKey: ["reflection-comments", reflection.id],
     queryFn: () =>
-      base44.entities.ReflectionComment.filter({
+      db.entities.ReflectionComment.filter({
         reflection_id: reflection.id,
       }),
   });
@@ -26,7 +26,7 @@ export default function ReflectionPanel({ reflection, currentUser }) {
       const newLikes = isLiked
         ? likedBy.filter((e) => e !== currentUser.email)
         : [...likedBy, currentUser.email];
-      await base44.entities.PlanReflection.update(reflection.id, {
+      await db.entities.PlanReflection.update(reflection.id, {
         likes: newLikes.length,
         liked_by: newLikes,
       });
@@ -39,16 +39,16 @@ export default function ReflectionPanel({ reflection, currentUser }) {
   const commentMutation = useMutation({
     mutationFn: async () => {
       if (!commentText.trim()) return;
-      await base44.entities.ReflectionComment.create({
+      await db.entities.ReflectionComment.create({
         reflection_id: reflection.id,
         author_email: currentUser.email,
         author_name: currentUser.full_name,
-        author_avatar: (await base44.entities.UserProfile.filter({
+        author_avatar: (await db.entities.UserProfile.filter({
           user_email: currentUser.email,
         }).then((p) => p[0]?.avatar_url)) || null,
         content: commentText,
       });
-      await base44.entities.PlanReflection.update(reflection.id, {
+      await db.entities.PlanReflection.update(reflection.id, {
         comment_count: (reflection.comment_count || 0) + 1,
       });
       setCommentText("");

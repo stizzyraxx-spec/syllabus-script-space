@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { HandHeart, Plus, X, Loader2, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,18 +28,18 @@ export default function Prayer() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
-      if (authed) setUser(await base44.auth.me());
+    db.auth.isAuthenticated().then(async (authed) => {
+      if (authed) setUser(await db.auth.me());
     });
   }, []);
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["prayer-requests"],
-    queryFn: () => base44.entities.PrayerRequest.list("-created_date", 100),
+    queryFn: () => db.entities.PrayerRequest.list("-created_date", 100),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.PrayerRequest.create(data),
+    mutationFn: (data) => db.entities.PrayerRequest.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prayer-requests"] });
       setShowForm(false);
@@ -52,7 +52,7 @@ export default function Prayer() {
       const newPrayedBy = alreadyPrayed
         ? request.prayed_by.filter((e) => e !== user.email)
         : [...(request.prayed_by || []), user.email];
-      return base44.entities.PrayerRequest.update(request.id, {
+      return db.entities.PrayerRequest.update(request.id, {
         prayer_count: newPrayedBy.length,
         prayed_by: newPrayedBy,
       });

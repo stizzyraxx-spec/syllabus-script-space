@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send, Loader2, MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
@@ -15,20 +15,20 @@ export default function PostComments({ post, currentUser }) {
 
   const { data: profiles = [] } = useQuery({
     queryKey: ["all-profiles-mention"],
-    queryFn: () => base44.entities.UserProfile.list(),
+    queryFn: () => db.entities.UserProfile.list(),
     staleTime: 60000,
   });
 
   const { data: myProfile } = useQuery({
     queryKey: ["my-profile", currentUser?.email],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: currentUser.email }),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: currentUser.email }),
     select: (data) => data[0],
     enabled: !!currentUser?.email,
   });
 
   const { data: comments = [] } = useQuery({
     queryKey: ["post-comments", post.id],
-    queryFn: () => base44.entities.PostComment.filter({ post_id: post.id }, "created_date"),
+    queryFn: () => db.entities.PostComment.filter({ post_id: post.id }, "created_date"),
     enabled: open,
   });
 
@@ -36,19 +36,19 @@ export default function PostComments({ post, currentUser }) {
     mutationFn: async (content) => {
       const authorName = myProfile?.display_name || currentUser.full_name || "Anonymous";
       const authorAvatar = myProfile?.avatar_url || null;
-      await base44.entities.PostComment.create({
+      await db.entities.PostComment.create({
         post_id: post.id,
         author_email: currentUser.email,
         author_name: authorName,
         author_avatar: authorAvatar,
         content,
       });
-      await base44.entities.CommunityPost.update(post.id, {
+      await db.entities.CommunityPost.update(post.id, {
         comment_count: (post.comment_count || 0) + 1,
       });
       // Notify post author if different
       if (post.author_email && post.author_email !== currentUser.email) {
-        await base44.entities.Notification.create({
+        await db.entities.Notification.create({
           recipient_email: post.author_email,
           actor_name: currentUser.full_name || "Someone",
           actor_email: currentUser.email,
@@ -62,7 +62,7 @@ export default function PostComments({ post, currentUser }) {
       const tagged = parseMentions(content, profiles);
       for (const email of tagged) {
         if (email !== currentUser.email && email !== post.author_email) {
-          await base44.entities.Notification.create({
+          await db.entities.Notification.create({
             recipient_email: email,
             actor_name: currentUser.full_name || "Someone",
             actor_email: currentUser.email,
@@ -145,7 +145,7 @@ export default function PostComments({ post, currentUser }) {
             </div>
           ) : (
             <p className="font-body text-xs text-muted-foreground text-center py-1">
-              <button onClick={() => base44.auth.redirectToLogin()} className="text-accent hover:underline">Sign in</button> to comment
+              <button onClick={() => db.auth.redirectToLogin()} className="text-accent hover:underline">Sign in</button> to comment
             </p>
           )}
         </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { uploadFileToS3 } from "@/lib/uploadToS3";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { X, Image, Video, Type, Loader2, Upload, BookOpen, FileText, Trash2 } from "lucide-react";
@@ -21,13 +21,13 @@ export default function CreatePost({ currentUser, onClose }) {
 
   const { data: profiles = [] } = useQuery({
     queryKey: ["all-profiles-mention"],
-    queryFn: () => base44.entities.UserProfile.list(),
+    queryFn: () => db.entities.UserProfile.list(),
     staleTime: 60000,
   });
 
   const { data: myProfile } = useQuery({
     queryKey: ["my-profile", currentUser?.email],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: currentUser.email }),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: currentUser.email }),
     select: (data) => data[0],
     enabled: !!currentUser?.email,
   });
@@ -50,7 +50,7 @@ export default function CreatePost({ currentUser, onClose }) {
       const authorName = myProfile?.display_name || currentUser.full_name || "Anonymous";
       const authorAvatar = myProfile?.avatar_url || null;
       const versePrefix = selectedVerse ? `📖 ${selectedVerse.reference}\n\n"${selectedVerse.text}"\n\n` : "";
-      const post = await base44.entities.CommunityPost.create({
+      const post = await db.entities.CommunityPost.create({
         author_email: currentUser.email,
         author_name: authorName,
         author_avatar: authorAvatar,
@@ -62,14 +62,14 @@ export default function CreatePost({ currentUser, onClose }) {
       });
       
       // Check if user reached 10 posts for creator mode unlock
-      const userPosts = await base44.entities.CommunityPost.filter({ author_email: currentUser.email });
+      const userPosts = await db.entities.CommunityPost.filter({ author_email: currentUser.email });
       if (userPosts.length === 10 && !myProfile?.is_creator) {
         // Unlock creator mode
         if (myProfile?.id) {
-          await base44.entities.UserProfile.update(myProfile.id, { is_creator: true });
+          await db.entities.UserProfile.update(myProfile.id, { is_creator: true });
         }
         // Send notification
-        await base44.entities.Notification.create({
+        await db.entities.Notification.create({
           recipient_email: currentUser.email,
           actor_name: "The Condition of Man",
           actor_email: "system",
@@ -84,7 +84,7 @@ export default function CreatePost({ currentUser, onClose }) {
       const tagged = parseMentions(caption, profiles);
       for (const email of tagged) {
         if (email !== currentUser.email) {
-          await base44.entities.Notification.create({
+          await db.entities.Notification.create({
             recipient_email: email,
             actor_name: currentUser.full_name || "Someone",
             actor_email: currentUser.email,

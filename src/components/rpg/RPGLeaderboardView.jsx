@@ -2,12 +2,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy, Medal } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 
 export default function RPGLeaderboardView({ onBack }) {
   const { data: leaderboard = [], isLoading } = useQuery({
     queryKey: ["rpg-leaderboard"],
-    queryFn: () => base44.entities.RPGLeaderboard.list("-final_score", 50),
+    queryFn: () => db.entities.RPGLeaderboard.list("-final_score", 50),
     refetchInterval: 30000,
   });
 

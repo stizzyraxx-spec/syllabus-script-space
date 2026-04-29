@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Calendar, Clock, Users, Plus, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -10,9 +10,9 @@ export default function BiblePlansHub() {
   const [userEnrollments, setUserEnrollments] = useState([]);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
       }
     });
@@ -20,12 +20,12 @@ export default function BiblePlansHub() {
 
   const { data: plans = [] } = useQuery({
     queryKey: ["bible-plans"],
-    queryFn: () => base44.entities.BiblePlan.list("-created_date", 50),
+    queryFn: () => db.entities.BiblePlan.list("-created_date", 50),
   });
 
   useEffect(() => {
     if (user?.email) {
-      base44.entities.UserPlanEnrollment.filter(
+      db.entities.UserPlanEnrollment.filter(
         { user_email: user.email, status: "active" }
       ).then(setUserEnrollments);
     }

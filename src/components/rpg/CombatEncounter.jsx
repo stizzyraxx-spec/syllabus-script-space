@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Zap, Shield, BookOpen } from "lucide-react";
@@ -106,20 +106,20 @@ export default function CombatEncounter({ character, progress, enemyType = "demo
   // Fetch equipped items and compute stat bonuses
   const { data: equippedInventory = [] } = useQuery({
     queryKey: ["equipped-inventory", playerEmail],
-    queryFn: () => base44.entities.PlayerInventory.filter({ player_email: playerEmail, equipped: true }),
+    queryFn: () => db.entities.PlayerInventory.filter({ player_email: playerEmail, equipped: true }),
     enabled: !!playerEmail,
   });
 
   const { data: allItems = [] } = useQuery({
     queryKey: ["all-items"],
-    queryFn: () => base44.entities.Item.list(),
+    queryFn: () => db.entities.Item.list(),
     enabled: !!playerEmail,
   });
 
   // Fetch player skills
   const { data: fetchedPlayerSkills } = useQuery({
     queryKey: ["player-skills", playerEmail],
-    queryFn: () => base44.entities.PlayerSkill.filter({ player_email: playerEmail }),
+    queryFn: () => db.entities.PlayerSkill.filter({ player_email: playerEmail }),
     enabled: !!playerEmail,
   });
 
@@ -129,12 +129,12 @@ export default function CombatEncounter({ character, progress, enemyType = "demo
       const existingSkill = fetchedPlayerSkills?.find((s) => s.skill_id === skillId);
       if (existingSkill) {
         const newLevel = Math.floor(existingSkill.uses_count / 5) + 1;
-        await base44.entities.PlayerSkill.update(existingSkill.id, {
+        await db.entities.PlayerSkill.update(existingSkill.id, {
           uses_count: existingSkill.uses_count + 1,
           level: newLevel,
         });
       } else {
-        await base44.entities.PlayerSkill.create({
+        await db.entities.PlayerSkill.create({
           player_email: playerEmail,
           skill_id: skillId,
           skill_name: skillId.replace(/_/g, " ").toUpperCase(),

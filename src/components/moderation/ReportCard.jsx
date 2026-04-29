@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { AlertCircle, Trash2, Loader2, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -26,8 +26,8 @@ export default function ReportCard({ report, onUpdate }) {
   const [notes, setNotes] = useState(report.moderator_notes || "");
   const updateMutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
-      return base44.entities.ReportedContent.update(report.id, {
+      const user = await db.auth.me();
+      return db.entities.ReportedContent.update(report.id, {
         moderator_action: action,
         moderator_notes: notes,
         status: "resolved",
@@ -42,14 +42,14 @@ export default function ReportCard({ report, onUpdate }) {
 
   const deleteContentMutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
+      const user = await db.auth.me();
       // Delete the actual content
       const entityName = report.content_type === "post" ? "CommunityPost" : "PostComment";
       const contentId = report.content_type === "post" ? report.post_id : report.comment_id;
-      await base44.entities[entityName].delete(contentId);
+      await db.entities[entityName].delete(contentId);
       
       // Update report
-      return base44.entities.ReportedContent.update(report.id, {
+      return db.entities.ReportedContent.update(report.id, {
         moderator_action: "content_removed",
         status: "resolved",
         moderator_email: user.email,

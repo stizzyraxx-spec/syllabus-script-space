@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Send, Gift, Share2, Users, Radio, Heart, MoreVertical, BookmarkIcon, Copy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,14 +26,14 @@ export default function LiveViewerView({ stream, user, onLeave }) {
 
   const { data: myProfile } = useQuery({
     queryKey: ["my-profile", user?.email],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: user?.email }),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: user?.email }),
     select: (d) => d[0],
     enabled: !!user?.email,
   });
 
   const { data: streamData } = useQuery({
     queryKey: ["stream-live", stream.id],
-    queryFn: () => base44.entities.LiveStream.filter({ id: stream.id }),
+    queryFn: () => db.entities.LiveStream.filter({ id: stream.id }),
     select: (d) => d[0] || stream,
     refetchInterval: 5000,
   });
@@ -44,7 +44,7 @@ export default function LiveViewerView({ stream, user, onLeave }) {
       const newLikedBy = liked
         ? streamData.liked_by.filter((e) => e !== user?.email)
         : [...(streamData.liked_by || []), user?.email];
-      await base44.entities.LiveStream.update(stream.id, {
+      await db.entities.LiveStream.update(stream.id, {
         likes: liked ? Math.max(0, (streamData?.likes || 1) - 1) : (streamData?.likes || 0) + 1,
         liked_by: newLikedBy,
       });
@@ -54,7 +54,7 @@ export default function LiveViewerView({ stream, user, onLeave }) {
 
   const { data: comments = [] } = useQuery({
     queryKey: ["live-comments", stream.id],
-    queryFn: () => base44.entities.LiveComment.filter({ stream_id: stream.id }, "created_date", 60),
+    queryFn: () => db.entities.LiveComment.filter({ stream_id: stream.id }, "created_date", 60),
     refetchInterval: 2000,
   });
 
@@ -68,7 +68,7 @@ export default function LiveViewerView({ stream, user, onLeave }) {
     const join = async () => {
       // Generate Agora token for viewer
       try {
-        const tokenRes = await base44.functions.invoke('generateAgoraToken', {
+        const tokenRes = await db.functions.invoke('generateAgoraToken', {
           channelName: `channel_${stream.id}`,
           uid: Date.now(),
           role: 'viewer'
@@ -79,7 +79,7 @@ export default function LiveViewerView({ stream, user, onLeave }) {
       }
       
       // Post join notification
-      await base44.entities.LiveComment.create({
+      await db.entities.LiveComment.create({
         stream_id: stream.id,
         author_email: user.email,
         author_name: myProfile?.display_name || user.full_name || "Someone",
@@ -88,13 +88,13 @@ export default function LiveViewerView({ stream, user, onLeave }) {
         type: "join",
       });
       // Increment viewer count
-      await base44.entities.LiveStream.update(stream.id, {
+      await db.entities.LiveStream.update(stream.id, {
         viewer_count: (streamData?.viewer_count || 0) + 1,
       });
     };
     join();
     return () => {
-      base44.entities.LiveStream.update(stream.id, {
+      db.entities.LiveStream.update(stream.id, {
         viewer_count: Math.max(0, (streamData?.viewer_count || 1) - 1),
       });
     };
@@ -102,7 +102,7 @@ export default function LiveViewerView({ stream, user, onLeave }) {
 
   const sendComment = async () => {
     if (!comment.trim() || !user) return;
-    await base44.entities.LiveComment.create({
+    await db.entities.LiveComment.create({
       stream_id: stream.id,
       author_email: user.email,
       author_name: myProfile?.display_name || user.full_name || "Viewer",
@@ -115,14 +115,14 @@ export default function LiveViewerView({ stream, user, onLeave }) {
   };
 
   const sendGift = async (gift) => {
-    if (!user) { base44.auth.redirectToLogin(); return; }
+    if (!user) { db.auth.redirectToLogin(); return; }
     setShowGifts(false);
     // Floating animation
     const id = Date.now();
     setFloatingGifts((prev) => [...prev, { id, emoji: gift.emoji }]);
     setTimeout(() => setFloatingGifts((prev) => prev.filter((g) => g.id !== id)), 2500);
 
-    await base44.entities.LiveComment.create({
+    await db.entities.LiveComment.create({
       stream_id: stream.id,
       author_email: user.email,
       author_name: myProfile?.display_name || user.full_name || "Viewer",
@@ -132,7 +132,7 @@ export default function LiveViewerView({ stream, user, onLeave }) {
       gift_emoji: gift.emoji,
       gift_name: gift.name,
     });
-    await base44.entities.LiveStream.update(stream.id, {
+    await db.entities.LiveStream.update(stream.id, {
       total_gifts: (streamData?.total_gifts || 0) + gift.value,
     });
     queryClient.invalidateQueries({ queryKey: ["live-comments", stream.id] });
@@ -214,7 +214,7 @@ export default function LiveViewerView({ stream, user, onLeave }) {
           </div>
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => user ? toggleLike() : base44.auth.redirectToLogin()}
+              onClick={() => user ? toggleLike() : db.auth.redirectToLogin()}
               className={`p-2 rounded-full transition-colors ${streamData?.liked_by?.includes(user?.email) ? 'bg-red-500 text-white' : 'bg-white/10 text-white'}`}
             >
               <Heart className={`w-4 h-4 ${streamData?.liked_by?.includes(user?.email) ? 'fill-current' : ''}`} />
@@ -368,7 +368,7 @@ export default function LiveViewerView({ stream, user, onLeave }) {
           </>
         ) : (
           <button
-            onClick={() => base44.auth.redirectToLogin()}
+            onClick={() => db.auth.redirectToLogin()}
             className="flex-1 text-center font-body text-sm text-accent hover:underline"
           >
             Sign in to comment & send gifts

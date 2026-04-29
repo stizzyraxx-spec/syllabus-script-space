@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Send, Loader2, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
@@ -26,12 +26,12 @@ export default function MessagesView({ currentUser, onViewProfile }) {
   // All conversations the user is part of
   const { data: sentMessages = [] } = useQuery({
     queryKey: ["dms-sent", currentUser.email],
-    queryFn: () => base44.entities.DirectMessage.filter({ from_email: currentUser.email }, "-created_date", 100),
+    queryFn: () => db.entities.DirectMessage.filter({ from_email: currentUser.email }, "-created_date", 100),
     refetchInterval: 5000,
   });
   const { data: receivedMessages = [] } = useQuery({
     queryKey: ["dms-received", currentUser.email],
-    queryFn: () => base44.entities.DirectMessage.filter({ to_email: currentUser.email }, "-created_date", 100),
+    queryFn: () => db.entities.DirectMessage.filter({ to_email: currentUser.email }, "-created_date", 100),
     refetchInterval: 5000,
   });
 
@@ -47,7 +47,7 @@ export default function MessagesView({ currentUser, onViewProfile }) {
   const { data: convoMessages = [] } = useQuery({
     queryKey: ["convo", convoId],
     queryFn: () =>
-      base44.entities.DirectMessage.filter({ conversation_id: convoId }, "created_date", 100),
+      db.entities.DirectMessage.filter({ conversation_id: convoId }, "created_date", 100),
     enabled: !!convoId,
     refetchInterval: 3000,
   });
@@ -58,7 +58,7 @@ export default function MessagesView({ currentUser, onViewProfile }) {
 
   const sendMutation = useMutation({
     mutationFn: () =>
-      base44.entities.DirectMessage.create({
+      db.entities.DirectMessage.create({
         from_email: currentUser.email,
         to_email: activeConvo,
         content: newMessage,
@@ -85,7 +85,7 @@ export default function MessagesView({ currentUser, onViewProfile }) {
 
     setSearchLoading(true);
     try {
-      const profiles = await base44.entities.UserProfile.filter({}, undefined, 100);
+      const profiles = await db.entities.UserProfile.filter({}, undefined, 100);
       const filtered = profiles.filter(
         (p) =>
           p.username?.toLowerCase().includes(username.toLowerCase()) &&

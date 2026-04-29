@@ -1,9 +1,16 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -15,21 +22,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing gameType or score' }, { status: 400 });
     }
 
-    // Calculate coin reward based on score and difficulty
-    const baseCoinReward = Math.floor(score / 10); // 1 coin per 10 points
+    const baseCoinReward = Math.floor(score / 10);
     const difficultyMultiplier = difficulty === 'hard' ? 1.5 : difficulty === 'medium' ? 1.2 : 1;
     const coinsAwarded = Math.max(5, Math.floor(baseCoinReward * difficultyMultiplier));
 
-    // Get or create player coins
-    let playerCoins = await base44.entities.PlayerCoins.filter({ player_email: user.email });
-    
-    if (playerCoins.length > 0) {
-      const updated = playerCoins[0].coins + coinsAwarded;
-      await base44.entities.PlayerCoins.update(playerCoins[0].id, {
-        coins: updated,
-      });
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: playerCoins } = await supabase
+      .from('player_coins')
+      .select('*')
+      .eq('player_email', user.email);
+
+    if (playerCoins && playerCoins.length > 0) {
+      await supabase.from('player_coins').update({
+        coins: playerCoins[0].coins + coinsAwarded,
+        updated_date: new Date().toISOString(),
+      }).eq('id', playerCoins[0].id);
     } else {
-      await base44.entities.PlayerCoins.create({
+      await supabase.from('player_coins').insert({
         player_email: user.email,
         coins: coinsAwarded,
         total_spent: 0,
@@ -37,12 +46,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({
-      success: true,
-      coinsAwarded,
-      gameType,
-      score,
-    });
+    return Response.json({ success: true, coinsAwarded, gameType, score });
   } catch (error) {
     console.error('Award game coins error:', error);
     return Response.json({ error: error.message }, { status: 500 });

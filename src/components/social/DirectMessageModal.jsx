@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Send, Loader2 } from "lucide-react";
 import { format } from "date-fns";
@@ -18,7 +18,7 @@ export default function DirectMessageModal({ currentUser, recipientEmail, recipi
 
   const { data: recipientProfile } = useQuery({
     queryKey: ["user-profile", recipientEmail],
-    queryFn: () => base44.entities.UserProfile.filter({ user_email: recipientEmail }),
+    queryFn: () => db.entities.UserProfile.filter({ user_email: recipientEmail }),
     select: (data) => data[0],
   });
 
@@ -27,7 +27,7 @@ export default function DirectMessageModal({ currentUser, recipientEmail, recipi
   const { data: convoMessages = [] } = useQuery({
     queryKey: ["convo", convoId],
     queryFn: () =>
-      base44.entities.DirectMessage.filter({ conversation_id: convoId }, "created_date", 100),
+      db.entities.DirectMessage.filter({ conversation_id: convoId }, "created_date", 100),
     refetchInterval: 3000,
   });
 
@@ -41,7 +41,7 @@ export default function DirectMessageModal({ currentUser, recipientEmail, recipi
 
   const sendMutation = useMutation({
     mutationFn: () =>
-      base44.entities.DirectMessage.create({
+      db.entities.DirectMessage.create({
         from_email: currentUser.email,
         to_email: recipientEmail,
         content: newMessage,

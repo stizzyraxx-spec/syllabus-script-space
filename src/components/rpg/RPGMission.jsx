@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Zap } from "lucide-react";
 import { MouseContext } from "@/lib/MouseContext";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import CombatEncounter from "./CombatEncounter";
 import { useCombatEncounter } from "@/hooks/useCombatEncounter";
 import MissionTypeFetchQuest from "./MissionTypeFetchQuest";
@@ -114,7 +114,7 @@ export default function RPGMission({ missionTheme, character, characterData, pro
     try {
       const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const trialNum = decisionHistory.length + 1;
-      const response = await base44.functions.invoke("generateDynamicMission", {
+      const response = await db.functions.invoke("generateDynamicMission", {
         character: characterData?.name || character,
         sessionId: uniqueId,
         missionCount: trialNum,

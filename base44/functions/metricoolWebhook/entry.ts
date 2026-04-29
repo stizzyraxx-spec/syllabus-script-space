@@ -1,8 +1,12 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 Deno.serve(async (req) => {
   try {
-    // Verify secret key from query param or header
     const url = new URL(req.url);
     const secret = url.searchParams.get("secret") || req.headers.get("x-webhook-secret");
     const expectedSecret = Deno.env.get("METRICOOL_WEBHOOK_SECRET");
@@ -13,13 +17,11 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
 
-    // Verify brand is "stizzop" (case-insensitive)
     const brand = body.brand || body.brand_name || body.account || body.profile || "";
     if (brand && brand.toLowerCase() !== "stizzop") {
       return Response.json({ error: "Brand not allowed" }, { status: 403 });
     }
 
-    // Extract post data — supports direct JSON or Metricool/Zapier style payloads
     const title = body.title || body.post_title || body.name || "New Post";
     const content = body.content || body.text || body.caption || body.message || body.body || "";
     const media_url = body.media_url || body.image_url || body.image || body.video_url || null;
@@ -31,19 +33,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: "No content provided" }, { status: 400 });
     }
 
-    const base44 = createClientFromRequest(req);
+    const { data: post } = await supabase
+      .from('forum_posts')
+      .insert({
+        title,
+        content,
+        category: ["general", "bible_study", "justice_ethics", "testimonies"].includes(category) ? category : "general",
+        author_name,
+        reply_count: 0,
+        ...(media_url && { media_url }),
+        ...(media_type && { media_type }),
+      })
+      .select()
+      .single();
 
-    const post = await base44.asServiceRole.entities.ForumPost.create({
-      title,
-      content,
-      category: ["general", "bible_study", "justice_ethics", "testimonies"].includes(category) ? category : "general",
-      author_name,
-      reply_count: 0,
-      ...(media_url && { media_url }),
-      ...(media_type && { media_type }),
-    });
-
-    return Response.json({ success: true, post_id: post.id, title: post.title });
+    return Response.json({ success: true, post_id: post?.id, title: post?.title });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

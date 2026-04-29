@@ -1,19 +1,24 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
     const { playerEmail } = await req.json();
 
     if (!playerEmail) {
       return Response.json({ error: "No player email provided" }, { status: 400 });
     }
 
-    const existing = await base44.entities.PlayerCoins.filter({
-      player_email: playerEmail,
-    });
+    const { data: existing } = await supabase
+      .from('player_coins')
+      .select('*')
+      .eq('player_email', playerEmail);
 
-    if (existing.length === 0) {
+    if (!existing || existing.length === 0) {
       return Response.json({ coins: 0, lifetimePurchased: 0 });
     }
 

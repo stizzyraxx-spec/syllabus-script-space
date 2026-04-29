@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, RefreshCw, Loader2, CheckCircle2, XCircle, ChevronRight, Zap } from "lucide-react";
 import ShareButton from "@/components/shared/ShareButton";
@@ -71,7 +71,7 @@ export default function BibleTrivia({ user }) {
     setAnswers([]);
     setFinished(false);
 
-    const res = await base44.functions.invoke("generateTriviaQuestions", { count, difficulty: diff, category: cat, specificBook: book });
+    const res = await db.functions.invoke("generateTriviaQuestions", { count, difficulty: diff, category: cat, specificBook: book });
     const generated = res.data?.questions || [];
     setQuestions(generated.length > 0 ? generated : null);
     setLoading(false);
@@ -106,9 +106,9 @@ export default function BibleTrivia({ user }) {
 
   const saveScore = async (finalScore) => {
     try {
-      const currentUser = await base44.auth.me();
+      const currentUser = await db.auth.me();
       if (currentUser) {
-        await base44.entities.GameScore.create({
+        await db.entities.GameScore.create({
           player_email: currentUser.email,
           player_name: currentUser.full_name,
           game_type: "bible_trivia",

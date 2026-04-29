@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Shield, Users, Loader2, Search, Check, X } from "lucide-react";
 import { motion } from "framer-motion";
+import SeedDemoData from "@/components/admin/SeedDemoData";
 
 export default function AdminPanel() {
   const [user, setUser] = useState(null);
@@ -11,9 +12,9 @@ export default function AdminPanel() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const currentUser = await base44.auth.me();
+        const currentUser = await db.auth.me();
         setUser(currentUser);
         if (currentUser.role !== "admin") {
           window.location.href = "/";
@@ -27,13 +28,13 @@ export default function AdminPanel() {
 
   const { data: userProfiles = [], isLoading } = useQuery({
     queryKey: ["all-user-profiles"],
-    queryFn: () => base44.entities.UserProfile.list(),
+    queryFn: () => db.entities.UserProfile.list(),
     enabled: !!user,
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ["all-users"],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => db.entities.User.list(),
     enabled: !!user,
   });
 
@@ -44,14 +45,14 @@ export default function AdminPanel() {
         // Update UserProfile is_moderator
         const profile = userProfiles.find((p) => p.user_email === userId);
         if (profile) {
-          await base44.entities.UserProfile.update(profile.id, {
+          await db.entities.UserProfile.update(profile.id, {
             is_moderator: isModerator,
           });
         }
       }
       if (role !== undefined) {
         // Update User role
-        await base44.entities.User.update(userId, { role });
+        await db.entities.User.update(userId, { role });
       }
       return true;
     },
@@ -210,6 +211,11 @@ export default function AdminPanel() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Demo Data Seeder */}
+        <div className="mt-8">
+          <SeedDemoData user={user} />
         </div>
 
         {/* Stats */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Zap, ShoppingCart } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import CoinShopModal from "./CoinShopModal";
 
@@ -10,7 +10,7 @@ export default function CoinBalance({ playerEmail, onCoinsUpdated }) {
 
   const { data: coinsData, refetch } = useQuery({
     queryKey: ["player-coins", playerEmail],
-    queryFn: () => base44.functions.invoke("getPlayerCoins", { playerEmail }),
+    queryFn: () => db.functions.invoke("getPlayerCoins", { playerEmail }),
     enabled: !!playerEmail,
     refetchInterval: 30000,
     staleTime: 20000,

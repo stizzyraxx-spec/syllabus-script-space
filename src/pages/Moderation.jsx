@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Shield, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { motion } from "framer-motion";
@@ -19,9 +19,9 @@ export default function Moderation() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const currentUser = await base44.auth.me();
+        const currentUser = await db.auth.me();
         setUser(currentUser);
       }
       setLoading(false);
@@ -32,7 +32,7 @@ export default function Moderation() {
     queryKey: ["mod-profile", user?.email],
     queryFn: () =>
       user?.email
-        ? base44.entities.UserProfile.filter({ user_email: user.email })
+        ? db.entities.UserProfile.filter({ user_email: user.email })
         : Promise.resolve([]),
     select: (data) => data[0],
     enabled: !!user?.email,
@@ -40,7 +40,7 @@ export default function Moderation() {
 
   const { data: reports = [], refetch: refetchReports } = useQuery({
     queryKey: ["reported-content"],
-    queryFn: () => base44.entities.ReportedContent.list(),
+    queryFn: () => db.entities.ReportedContent.list(),
     enabled: !!user,
   });
 
@@ -59,7 +59,7 @@ export default function Moderation() {
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">Access Denied</h1>
           <p className="font-body text-muted-foreground mb-4">You must be logged in to access the moderation dashboard.</p>
           <button
-            onClick={() => base44.auth.redirectToLogin()}
+            onClick={() => db.auth.redirectToLogin()}
             className="px-6 py-2 rounded-lg bg-accent text-accent-foreground font-body font-semibold hover:bg-accent/90"
           >
             Sign In

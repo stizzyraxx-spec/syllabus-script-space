@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Sparkles, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 export default function PersonalizedRecommendations({ userProfile }) {
   const { data: allPosts = [] } = useQuery({
     queryKey: ["all-posts-discovery"],
-    queryFn: () => base44.entities.CommunityPost.list("-created_date", 100),
+    queryFn: () => db.entities.CommunityPost.list("-created_date", 100),
   });
 
   const recommendations = useMemo(() => {

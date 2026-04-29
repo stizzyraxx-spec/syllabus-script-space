@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Heart, UserPlus, UserCheck, Loader2, PlusSquare } from "lucide-react";
@@ -30,9 +30,9 @@ export default function HomeCommunityFeed() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (authed) => {
+    db.auth.isAuthenticated().then(async (authed) => {
       if (authed) {
-        const me = await base44.auth.me();
+        const me = await db.auth.me();
         setUser(me);
       }
     });
@@ -40,7 +40,7 @@ export default function HomeCommunityFeed() {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["community-posts"],
-    queryFn: () => base44.entities.CommunityPost.list("-created_date", 10),
+    queryFn: () => db.entities.CommunityPost.list("-created_date", 10),
     onSuccess: (data) => {
       const videoPosts = data.filter((p) => p.media_type === "video" && p.media_url);
       if (videoPosts.length > 0) {
@@ -51,7 +51,7 @@ export default function HomeCommunityFeed() {
 
   const { data: allProfiles = [] } = useQuery({
     queryKey: ["all-profiles"],
-    queryFn: () => base44.entities.UserProfile.list(),
+    queryFn: () => db.entities.UserProfile.list(),
     enabled: !!user,
   });
 
@@ -71,7 +71,7 @@ export default function HomeCommunityFeed() {
     mutationFn: async (post) => {
       const likedBy = post.liked_by || [];
       const alreadyLiked = likedBy.includes(user?.email);
-      return base44.entities.CommunityPost.update(post.id, {
+      return db.entities.CommunityPost.update(post.id, {
         likes: alreadyLiked ? (post.likes || 1) - 1 : (post.likes || 0) + 1,
         liked_by: alreadyLiked
           ? likedBy.filter((e) => e !== user?.email)
@@ -84,12 +84,12 @@ export default function HomeCommunityFeed() {
   const followMutation = useMutation({
     mutationFn: async (authorEmail) => {
       // Update the author's followers
-      const authorProfiles = await base44.entities.UserProfile.filter({ user_email: authorEmail });
+      const authorProfiles = await db.entities.UserProfile.filter({ user_email: authorEmail });
       if (authorProfiles.length > 0) {
         const authorProfile = authorProfiles[0];
         const followers = authorProfile.followers || [];
         const isFollowing = followers.includes(user?.email);
-        await base44.entities.UserProfile.update(authorProfile.id, {
+        await db.entities.UserProfile.update(authorProfile.id, {
           followers: isFollowing
             ? followers.filter((e) => e !== user?.email)
             : [...followers, user?.email],
@@ -97,7 +97,7 @@ export default function HomeCommunityFeed() {
         // Update my following list
         if (myProfile) {
           const following = myProfile.following || [];
-          await base44.entities.UserProfile.update(myProfile.id, {
+          await db.entities.UserProfile.update(myProfile.id, {
             following: isFollowing
               ? following.filter((e) => e !== authorEmail)
               : [...following, authorEmail],
@@ -105,7 +105,7 @@ export default function HomeCommunityFeed() {
         }
         // Send notification on new follow
         if (!isFollowing) {
-          await base44.entities.Notification.create({
+          await db.entities.Notification.create({
             recipient_email: authorEmail,
             actor_name: user?.full_name || "Someone",
             actor_email: user?.email,
@@ -152,7 +152,7 @@ export default function HomeCommunityFeed() {
               Sign in to like, comment, and share with the community
             </p>
             <button
-              onClick={() => base44.auth.redirectToLogin()}
+              onClick={() => db.auth.redirectToLogin()}
               className="font-body text-sm font-semibold text-accent hover:text-accent/80 transition-colors"
             >
               Sign In / Create Account

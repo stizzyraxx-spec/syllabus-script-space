@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2560 1440" width="2560" height="1440"
+     font-family="'Courier New', 'SF Mono', Menlo, monospace">
+  <defs>
+    <pattern id="grid-fine" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#FFFFFF" stroke-width="0.5" stroke-opacity="0.06"/>
+    </pattern>
+    <pattern id="grid-major" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.14"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#FFFFFF"/>
+    </marker>
+    <marker id="dimtick" viewBox="-3 -3 6 6" refX="0" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M -3 -3 L 3 3" stroke="#FFFFFF" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="2560" height="1440" fill="#000000"/>
+  <rect width="2560" height="1440" fill="url(#grid-fine)"/>
+  <rect width="2560" height="1440" fill="url(#grid-major)"/>
+
+  <!-- Outer drafting border -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.5">
+    <rect x="40" y="40" width="2480" height="1360"/>
+    <rect x="60" y="60" width="2440" height="1320" stroke-opacity="0.5"/>
+  </g>
+
+  <!-- Corner registration marks -->
+  <g stroke="#FFFFFF" stroke-width="1.2" fill="none">
+    <path d="M 40 100 L 100 100 M 100 40 L 100 100"/>
+    <path d="M 2520 100 L 2460 100 M 2460 40 L 2460 100"/>
+    <path d="M 40 1340 L 100 1340 M 100 1400 L 100 1340"/>
+    <path d="M 2520 1340 L 2460 1340 M 2460 1400 L 2460 1340"/>
+  </g>
+
+  <!-- ============== HEADER ============== -->
+  <g fill="#FFFFFF">
+    <text x="120" y="135" font-size="56" font-weight="700" letter-spacing="3">THE  CONDITION  OF  MAN</text>
+    <line x1="120" y1="155" x2="1500" y2="155" stroke="#FFFFFF" stroke-width="1.2"/>
+    <text x="120" y="195" font-size="22" font-weight="400" letter-spacing="6" fill-opacity="0.75">ARCHITECTURE  BLUEPRINT  ·  syllabus-script-space</text>
+  </g>
+
+  <!-- Top-right meta block -->
+  <g fill="#FFFFFF" font-size="16" letter-spacing="2">
+    <g transform="translate(2080 110)" stroke="#FFFFFF" stroke-width="1" fill="none">
+      <rect width="380" height="100"/>
+      <line x1="0" y1="33" x2="380" y2="33"/>
+      <line x1="0" y1="66" x2="380" y2="66"/>
+      <line x1="190" y1="0" x2="190" y2="100"/>
+    </g>
+    <g transform="translate(2080 110)">
+      <text x="14" y="22" font-size="11" fill-opacity="0.55">DRAWING</text>
+      <text x="14" y="55" font-size="18" font-weight="700">A-001</text>
+      <text x="204" y="22" font-size="11" fill-opacity="0.55">SCALE</text>
+      <text x="204" y="55" font-size="18" font-weight="700">N.T.S.</text>
+      <text x="14" y="55" font-size="18" font-weight="700"></text>
+      <text x="14" y="88" font-size="11" fill-opacity="0.55">DATE</text>
+      <text x="14" y="86" font-size="14" font-weight="700">  ·  2026-04-28</text>
+      <text x="204" y="88" font-size="11" fill-opacity="0.55">REV</text>
+      <text x="204" y="86" font-size="14" font-weight="700">  ·  02</text>
+    </g>
+  </g>
+
+  <!-- Layer rail labels -->
+  <g fill="#FFFFFF" font-size="13" font-weight="700" letter-spacing="6" fill-opacity="0.75">
+    <text x="80" y="290" transform="rotate(-90 80 290)">CLIENT  TIER</text>
+    <text x="80" y="585" transform="rotate(-90 80 585)">APPLICATION  SHELL</text>
+    <text x="80" y="940" transform="rotate(-90 80 940)">SERVICES  TIER</text>
+    <text x="80" y="1240" transform="rotate(-90 80 1240)">BUILD  /  DEPLOY</text>
+  </g>
+
+  <!-- Dimension line (top) showing total width -->
+  <g stroke="#FFFFFF" stroke-width="0.8" fill="none" opacity="0.55">
+    <line x1="120" y1="240" x2="1560" y2="240" marker-start="url(#dimtick)" marker-end="url(#dimtick)"/>
+    <line x1="120" y1="232" x2="120" y2="248"/>
+    <line x1="1560" y1="232" x2="1560" y2="248"/>
+  </g>
+  <text x="840" y="232" fill="#FFFFFF" font-size="12" letter-spacing="2" text-anchor="middle" opacity="0.6">[ APP STACK · 1440 u ]</text>
+
+  <!-- ============== CLIENT TIER ============== -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.6">
+    <rect x="120" y="260" width="700" height="140"/>
+    <rect x="860" y="260" width="700" height="140"/>
+  </g>
+  <g fill="#FFFFFF">
+    <text x="140" y="295" font-size="13" letter-spacing="4" fill-opacity="0.65">[ 01 ]  WEB · PWA</text>
+    <text x="140" y="345" font-size="30" font-weight="700">BROWSER  CLIENT</text>
+    <text x="140" y="380" font-size="18" fill-opacity="0.7">Chrome · Safari · Edge   |   served via Vercel</text>
+
+    <text x="880" y="295" font-size="13" letter-spacing="4" fill-opacity="0.65">[ 02 ]  DESKTOP</text>
+    <text x="880" y="345" font-size="30" font-weight="700">ELECTRON  31</text>
+    <text x="880" y="380" font-size="18" fill-opacity="0.7">macOS .dmg · Windows .exe   |   wraps /dist</text>
+  </g>
+  <!-- corner ticks on client boxes -->
+  <g stroke="#FFFFFF" stroke-width="1.2">
+    <path d="M120 260 l12 0 M120 260 l0 12 M820 260 l-12 0 M820 260 l0 12 M120 400 l12 0 M120 400 l0 -12 M820 400 l-12 0 M820 400 l0 -12" fill="none"/>
+    <path d="M860 260 l12 0 M860 260 l0 12 M1560 260 l-12 0 M1560 260 l0 12 M860 400 l12 0 M860 400 l0 -12 M1560 400 l-12 0 M1560 400 l0 -12" fill="none"/>
+  </g>
+
+  <!-- ============== APP SHELL ============== -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.8">
+    <rect x="120" y="450" width="1440" height="320"/>
+  </g>
+  <g fill="#FFFFFF">
+    <text x="140" y="487" font-size="13" letter-spacing="4" fill-opacity="0.65">[ 03 ]  APPLICATION SHELL</text>
+    <text x="140" y="540" font-size="36" font-weight="800">REACT 18  ·  VITE 6</text>
+    <line x1="140" y1="560" x2="700" y2="560" stroke="#FFFFFF" stroke-width="1"/>
+  </g>
+  <!-- chips inside shell -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.2">
+    <rect x="140" y="585" width="280" height="60"/>
+    <rect x="440" y="585" width="320" height="60"/>
+    <rect x="780" y="585" width="320" height="60"/>
+    <rect x="1120" y="585" width="420" height="60"/>
+    <rect x="140" y="665" width="280" height="60"/>
+    <rect x="440" y="665" width="320" height="60"/>
+    <rect x="780" y="665" width="320" height="60"/>
+    <rect x="1120" y="665" width="420" height="60"/>
+  </g>
+  <g fill="#FFFFFF" font-size="18" font-weight="700">
+    <text x="160" y="623">REACT  ROUTER  6</text>
+    <text x="460" y="623">TANSTACK  QUERY</text>
+    <text x="800" y="623">AUTH · THEME · GUIDANCE</text>
+    <text x="1140" y="623">REACT HOOK FORM + ZOD</text>
+
+    <text x="160" y="703">TAILWIND + SHADCN/UI</text>
+    <text x="460" y="703">RADIX UI  PRIMITIVES</text>
+    <text x="800" y="703">FRAMER MOTION · THREE.JS</text>
+    <text x="1140" y="703">RECHARTS · LEAFLET · jsPDF</text>
+  </g>
+
+  <!-- ============== FEATURE MODULES (right column) ============== -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.8">
+    <rect x="1620" y="260" width="820" height="840"/>
+  </g>
+  <g fill="#FFFFFF">
+    <text x="1640" y="298" font-size="13" letter-spacing="4" fill-opacity="0.65">[ 04 ]  FEATURE MODULES</text>
+    <text x="1640" y="345" font-size="30" font-weight="800">src / pages  ·  src / components</text>
+    <line x1="1640" y1="362" x2="2420" y2="362" stroke="#FFFFFF" stroke-width="1"/>
+  </g>
+
+  <!-- 3 col x 6 row grid of feature tiles, cell 250 x 110, gap 12 -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.1">
+    <!-- row 1 -->
+    <rect x="1640" y="386" width="250" height="110"/>
+    <rect x="1902" y="386" width="250" height="110"/>
+    <rect x="2164" y="386" width="256" height="110"/>
+    <!-- row 2 -->
+    <rect x="1640" y="506" width="250" height="110"/>
+    <rect x="1902" y="506" width="250" height="110"/>
+    <rect x="2164" y="506" width="256" height="110"/>
+    <!-- row 3 -->
+    <rect x="1640" y="626" width="250" height="110"/>
+    <rect x="1902" y="626" width="250" height="110"/>
+    <rect x="2164" y="626" width="256" height="110"/>
+    <!-- row 4 -->
+    <rect x="1640" y="746" width="250" height="110"/>
+    <rect x="1902" y="746" width="250" height="110"/>
+    <rect x="2164" y="746" width="256" height="110"/>
+    <!-- row 5 -->
+    <rect x="1640" y="866" width="250" height="110"/>
+    <rect x="1902" y="866" width="250" height="110"/>
+    <rect x="2164" y="866" width="256" height="110"/>
+    <!-- row 6 -->
+    <rect x="1640" y="986" width="250" height="110"/>
+    <rect x="1902" y="986" width="250" height="110"/>
+    <rect x="2164" y="986" width="256" height="110"/>
+  </g>
+
+  <g fill="#FFFFFF" font-size="13" letter-spacing="3" fill-opacity="0.65">
+    <!-- row 1 -->
+    <text x="1656" y="416">M-01</text>
+    <text x="1918" y="416">M-02</text>
+    <text x="2180" y="416">M-03</text>
+    <!-- row 2 -->
+    <text x="1656" y="536">M-04</text>
+    <text x="1918" y="536">M-05</text>
+    <text x="2180" y="536">M-06</text>
+    <!-- row 3 -->
+    <text x="1656" y="656">M-07</text>
+    <text x="1918" y="656">M-08</text>
+    <text x="2180" y="656">M-09</text>
+    <!-- row 4 -->
+    <text x="1656" y="776">M-10</text>
+    <text x="1918" y="776">M-11</text>
+    <text x="2180" y="776">M-12</text>
+    <!-- row 5 -->
+    <text x="1656" y="896">M-13</text>
+    <text x="1918" y="896">M-14</text>
+    <text x="2180" y="896">M-15</text>
+    <!-- row 6 -->
+    <text x="1656" y="1016">M-16</text>
+    <text x="1918" y="1016">M-17</text>
+    <text x="2180" y="1016">M-18</text>
+  </g>
+
+  <g fill="#FFFFFF" font-size="22" font-weight="700">
+    <text x="1656" y="455">HOME</text>
+    <text x="1918" y="455">BIBLE</text>
+    <text x="2180" y="455">BIBLE  PLANS</text>
+
+    <text x="1656" y="575">FORUMS</text>
+    <text x="1918" y="575">SOCIAL</text>
+    <text x="2180" y="575">PRAYER</text>
+
+    <text x="1656" y="695">LIVE</text>
+    <text x="1918" y="695">DISCOVERY</text>
+    <text x="2180" y="695">NOTEBOOK</text>
+
+    <text x="1656" y="815">GAMES</text>
+    <text x="1918" y="815">RPG</text>
+    <text x="2180" y="815">INVENTORY</text>
+
+    <text x="1656" y="935">PROFILE</text>
+    <text x="1918" y="935">DONATE</text>
+    <text x="2180" y="935">MODERATION</text>
+
+    <text x="1656" y="1055">ADMIN</text>
+    <text x="1918" y="1055">ABOUT</text>
+    <text x="2180" y="1055">AUTH</text>
+  </g>
+
+  <g fill="#FFFFFF" font-size="14" fill-opacity="0.6">
+    <text x="1656" y="478">dashboard</text>
+    <text x="1918" y="478">reader · search</text>
+    <text x="2180" y="478">reading plans</text>
+
+    <text x="1656" y="598">threads · posts</text>
+    <text x="1918" y="598">feed · profiles</text>
+    <text x="2180" y="598">requests · wall</text>
+
+    <text x="1656" y="718">streams · chat</text>
+    <text x="1918" y="718">explore feed</text>
+    <text x="2180" y="718">journal · notes</text>
+
+    <text x="1656" y="838">mini-games</text>
+    <text x="1918" y="838">quests · xp</text>
+    <text x="2180" y="838">currency · items</text>
+
+    <text x="1656" y="958">account · prefs</text>
+    <text x="1918" y="958">stripe checkout</text>
+    <text x="2180" y="958">profanity · bans</text>
+
+    <text x="1656" y="1078">panel · content</text>
+    <text x="1918" y="1078">static · legal</text>
+    <text x="2180" y="1078">login · reset</text>
+  </g>
+
+  <!-- ============== SERVICES TIER ============== -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.8">
+    <rect x="120" y="820" width="1440" height="280"/>
+  </g>
+  <g fill="#FFFFFF">
+    <text x="140" y="858" font-size="13" letter-spacing="4" fill-opacity="0.65">[ 05 ]  BACKEND  SERVICES</text>
+    <text x="140" y="908" font-size="30" font-weight="800">EXTERNAL  APIs  &amp;  DATA</text>
+    <line x1="140" y1="925" x2="700" y2="925" stroke="#FFFFFF" stroke-width="1"/>
+  </g>
+
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.4">
+    <rect x="140" y="945" width="330" height="135"/>
+    <rect x="490" y="945" width="330" height="135"/>
+    <rect x="840" y="945" width="330" height="135"/>
+    <rect x="1190" y="945" width="350" height="135"/>
+  </g>
+  <g fill="#FFFFFF">
+    <text x="156" y="975" font-size="12" letter-spacing="3" fill-opacity="0.6">S-01</text>
+    <text x="156" y="1010" font-size="22" font-weight="700">SUPABASE</text>
+    <text x="156" y="1040" font-size="16">Auth · Postgres</text>
+    <text x="156" y="1062" font-size="14" fill-opacity="0.6">RLS · realtime</text>
+
+    <text x="506" y="975" font-size="12" letter-spacing="3" fill-opacity="0.6">S-02</text>
+    <text x="506" y="1010" font-size="22" font-weight="700">BASE44  SDK</text>
+    <text x="506" y="1040" font-size="16">App backend</text>
+    <text x="506" y="1062" font-size="14" fill-opacity="0.6">builder sync</text>
+
+    <text x="856" y="975" font-size="12" letter-spacing="3" fill-opacity="0.6">S-03</text>
+    <text x="856" y="1010" font-size="22" font-weight="700">STRIPE</text>
+    <text x="856" y="1040" font-size="16">Payments</text>
+    <text x="856" y="1062" font-size="14" fill-opacity="0.6">donations · subs</text>
+
+    <text x="1206" y="975" font-size="12" letter-spacing="3" fill-opacity="0.6">S-04</text>
+    <text x="1206" y="1010" font-size="22" font-weight="700">AWS  S3</text>
+    <text x="1206" y="1040" font-size="16">Media uploads</text>
+    <text x="1206" y="1062" font-size="14" fill-opacity="0.6">avatars · attachments</text>
+  </g>
+
+  <!-- ============== DEPLOY ============== -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.8">
+    <rect x="120" y="1140" width="2320" height="200"/>
+  </g>
+  <g fill="#FFFFFF">
+    <text x="140" y="1178" font-size="13" letter-spacing="4" fill-opacity="0.65">[ 06 ]  BUILD  &amp;  DEPLOY  PIPELINE</text>
+  </g>
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.4">
+    <rect x="140" y="1200" width="380" height="115"/>
+    <rect x="540" y="1200" width="380" height="115"/>
+    <rect x="940" y="1200" width="460" height="115"/>
+    <rect x="1420" y="1200" width="460" height="115"/>
+    <rect x="1900" y="1200" width="520" height="115"/>
+  </g>
+  <g fill="#FFFFFF">
+    <text x="156" y="1228" font-size="12" letter-spacing="3" fill-opacity="0.6">D-01</text>
+    <text x="156" y="1266" font-size="22" font-weight="700">VERCEL</text>
+    <text x="156" y="1295" font-size="15" fill-opacity="0.7">Web · Preview · Prod</text>
+
+    <text x="556" y="1228" font-size="12" letter-spacing="3" fill-opacity="0.6">D-02</text>
+    <text x="556" y="1266" font-size="22" font-weight="700">VITE  BUILD</text>
+    <text x="556" y="1295" font-size="15" fill-opacity="0.7">/dist static bundle</text>
+
+    <text x="956" y="1228" font-size="12" letter-spacing="3" fill-opacity="0.6">D-03</text>
+    <text x="956" y="1266" font-size="22" font-weight="700">ELECTRON-BUILDER</text>
+    <text x="956" y="1295" font-size="15" fill-opacity="0.7">.dmg (mac)  ·  .exe (nsis)</text>
+
+    <text x="1436" y="1228" font-size="12" letter-spacing="3" fill-opacity="0.6">D-04</text>
+    <text x="1436" y="1266" font-size="22" font-weight="700">CODE  SIGNING</text>
+    <text x="1436" y="1295" font-size="15" fill-opacity="0.7">Developer ID · notarization</text>
+
+    <text x="1916" y="1228" font-size="12" letter-spacing="3" fill-opacity="0.6">D-05</text>
+    <text x="1916" y="1266" font-size="22" font-weight="700">RAXX  BEATS  STUDIOS  LLC</text>
+    <text x="1916" y="1295" font-size="15" fill-opacity="0.7">com.raxxbeats.conditionofman</text>
+  </g>
+
+  <!-- ============== CONNECTORS ============== -->
+  <g stroke="#FFFFFF" stroke-width="1.4" fill="none" opacity="0.85">
+    <!-- Clients down to App Shell -->
+    <path d="M470 400 L470 450" marker-end="url(#arrow)"/>
+    <path d="M1210 400 L1210 450" marker-end="url(#arrow)"/>
+    <!-- App Shell to Features (right) -->
+    <path d="M1560 610 L1620 610" marker-end="url(#arrow)"/>
+    <!-- App Shell down to Services -->
+    <path d="M840 770 L840 820" marker-end="url(#arrow)"/>
+    <!-- Services down to Deploy -->
+    <path d="M840 1100 L840 1140" marker-end="url(#arrow)" opacity="0.6"/>
+    <!-- Features down to Deploy -->
+    <path d="M2030 1100 L2030 1140" marker-end="url(#arrow)" opacity="0.6"/>
+  </g>
+
+  <!-- Footer / title block -->
+  <g stroke="#FFFFFF" stroke-width="1" fill="none">
+    <line x1="120" y1="1370" x2="2440" y2="1370"/>
+  </g>
+  <g fill="#FFFFFF" font-size="14" letter-spacing="3" fill-opacity="0.7">
+    <text x="120" y="1395">PROJECT · THE CONDITION OF MAN</text>
+    <text x="900" y="1395">DRAWN · STIZZYRAXX@GMAIL.COM</text>
+    <text x="1700" y="1395">SHEET  A-001  /  REV 02</text>
+    <text x="2440" y="1395" text-anchor="end">© RAXX BEATS STUDIOS LLC</text>
+  </g>
+</svg>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Trophy, Heart, Users } from "lucide-react";
@@ -13,7 +13,7 @@ export default function WorldBossEvent({ playerEmail, playerName, playerLevel })
   const { data: activeBoss } = useQuery({
     queryKey: ["active-world-boss"],
     queryFn: () =>
-      base44.entities.WorldBoss.filter({
+      db.entities.WorldBoss.filter({
         is_active: true,
       }).then((bosses) => (bosses.length > 0 ? bosses[0] : null)),
     refetchInterval: 3000,
@@ -23,7 +23,7 @@ export default function WorldBossEvent({ playerEmail, playerName, playerLevel })
   const { data: playerDamageLog } = useQuery({
     queryKey: ["boss-damage-log", activeBoss?.id, playerEmail],
     queryFn: () =>
-      base44.entities.BossDamageLog.filter({
+      db.entities.BossDamageLog.filter({
         boss_id: activeBoss?.id,
         player_email: playerEmail,
       }).then((logs) => (logs.length > 0 ? logs[0] : null)),
@@ -35,7 +35,7 @@ export default function WorldBossEvent({ playerEmail, playerName, playerLevel })
   const { data: topContributors } = useQuery({
     queryKey: ["boss-top-contributors", activeBoss?.id],
     queryFn: () =>
-      base44.entities.BossDamageLog.filter({
+      db.entities.BossDamageLog.filter({
         boss_id: activeBoss?.id,
       }),
     refetchInterval: 3000,
@@ -50,18 +50,18 @@ export default function WorldBossEvent({ playerEmail, playerName, playerLevel })
       const totalDamage = baseDamage + randomDamage;
 
       // Check if player already has a log
-      const existingLog = await base44.entities.BossDamageLog.filter({
+      const existingLog = await db.entities.BossDamageLog.filter({
         boss_id: activeBoss.id,
         player_email: playerEmail,
       });
 
       if (existingLog.length > 0) {
         const log = existingLog[0];
-        await base44.entities.BossDamageLog.update(log.id, {
+        await db.entities.BossDamageLog.update(log.id, {
           damage_dealt: (log.damage_dealt || 0) + totalDamage,
         });
       } else {
-        await base44.entities.BossDamageLog.create({
+        await db.entities.BossDamageLog.create({
           boss_id: activeBoss.id,
           player_email: playerEmail,
           player_name: playerName,
@@ -73,7 +73,7 @@ export default function WorldBossEvent({ playerEmail, playerName, playerLevel })
       const newHealth = Math.max(0, activeBoss.health - totalDamage);
       const newTotalDamage = (activeBoss.total_damage || 0) + totalDamage;
 
-      await base44.entities.WorldBoss.update(activeBoss.id, {
+      await db.entities.WorldBoss.update(activeBoss.id, {
         health: newHealth,
         total_damage: newTotalDamage,
         is_active: newHealth > 0,
