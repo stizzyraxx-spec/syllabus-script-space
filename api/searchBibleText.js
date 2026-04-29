@@ -97,8 +97,8 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3) Keyword search — case-insensitive substring match across all verses
-    const results = [];
+    // 3a) Try exact substring first
+    let results = [];
     for (const v of kjv) {
       if (v.t.toLowerCase().includes(lowerQ)) {
         results.push({ book: v.b, chapter: v.c, verse: v.v, text: v.t });
@@ -106,12 +106,32 @@ export default async function handler(req, res) {
       }
     }
 
-    let total = results.length;
-    if (total === limit) {
-      total = 0;
-      for (const v of kjv) if (v.t.toLowerCase().includes(lowerQ)) total++;
+    // 3b) If no exact substring, run a multi-keyword ranked search across all verses
+    if (results.length === 0) {
+      const STOP = new Set([
+        'a','an','and','are','as','at','be','but','by','do','for','from','had','has','have','he','her','him','his','i','if','in','into','is','it','its','me','my','no','not','of','on','or','our','say','says','said','she','so','some','such','that','the','their','them','then','there','these','they','this','to','up','was','we','were','what','when','where','which','who','whom','whose','why','will','with','would','you','your','about','tell','please','can','could','would','should','am','any','many','much','one','only','than','too','very','also','just','book','bible','verse','verses','passage','scripture','show','give','find','tell','where','how'
+      ]);
+      const keywords = lowerQ
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !STOP.has(w));
+
+      if (keywords.length > 0) {
+        const scored = [];
+        for (const v of kjv) {
+          const text = v.t.toLowerCase();
+          let hits = 0;
+          for (const k of keywords) if (text.includes(k)) hits++;
+          if (hits > 0) scored.push({ v, hits });
+        }
+        scored.sort((a, b) => b.hits - a.hits || a.v.t.length - b.v.t.length);
+        results = scored.slice(0, limit).map(s => ({
+          book: s.v.b, chapter: s.v.c, verse: s.v.v, text: s.v.t,
+        }));
+      }
     }
 
+    let total = results.length;
     return res.status(200).json({
       query: q,
       mode: 'keyword',

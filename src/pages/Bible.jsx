@@ -146,7 +146,6 @@ export default function Bible() {
               { id: "search", label: "Search" },
               { id: "original-language", label: "Original Language" },
               { id: "etymology", label: "Etymology" },
-              { id: "entomology", label: "Insects" },
               { id: "concordance", label: "Concordance" },
               { id: "favorites", label: "Saved" },
               { id: "highlights", label: "Highlights" },

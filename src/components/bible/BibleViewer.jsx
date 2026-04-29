@@ -73,19 +73,38 @@ export default function BibleViewer({ user, books, currentBook, onBookChange, cu
 
   const verses = versesData;
 
+  // Local-storage backup so highlights and favorites work even if the DB
+  // tables (bible_highlights, bible_favorites) aren't provisioned.
+  const hlKey = user?.email ? `tcom-highlights-${user.email}` : null;
+  const favKey = user?.email ? `tcom-favorites-${user.email}` : null;
+  const loadHL = () => { try { return JSON.parse(localStorage.getItem(hlKey) || '[]'); } catch { return []; } };
+  const loadFav = () => { try { return JSON.parse(localStorage.getItem(favKey) || '[]'); } catch { return []; } };
+  const saveHL = (arr) => { try { localStorage.setItem(hlKey, JSON.stringify(arr)); } catch {} };
+  const saveFav = (arr) => { try { localStorage.setItem(favKey, JSON.stringify(arr)); } catch {} };
+
   const { data: userHighlights = [] } = useQuery({
     queryKey: ["highlights", user?.email],
-    queryFn: () => user?.email
-      ? db.entities.BibleHighlight.filter({ user_email: user.email })
-      : Promise.resolve([]),
+    queryFn: async () => {
+      if (!user?.email) return [];
+      let dbList = [];
+      try { dbList = await db.entities.BibleHighlight.filter({ user_email: user.email }); } catch {}
+      const local = loadHL();
+      const dbIds = new Set(dbList.map(h => h.id));
+      return [...dbList, ...local.filter(h => !dbIds.has(h.id))];
+    },
     enabled: !!user?.email,
   });
 
   const { data: userFavorites = [] } = useQuery({
     queryKey: ["favorites", user?.email],
-    queryFn: () => user?.email
-      ? db.entities.BibleFavorite.filter({ user_email: user.email })
-      : Promise.resolve([]),
+    queryFn: async () => {
+      if (!user?.email) return [];
+      let dbList = [];
+      try { dbList = await db.entities.BibleFavorite.filter({ user_email: user.email }); } catch {}
+      const local = loadFav();
+      const dbIds = new Set(dbList.map(f => f.id));
+      return [...dbList, ...local.filter(f => !dbIds.has(f.id))];
+    },
     enabled: !!user?.email,
   });
 
@@ -101,45 +120,58 @@ export default function BibleViewer({ user, books, currentBook, onBookChange, cu
   }, [verses, initialVerse]);
 
   const addHighlight = useMutation({
-    mutationFn: (data) => db.entities.BibleHighlight.create(data),
-    onSuccess: async () => {
-      await awardPoints(user.email, "verse_highlight");
-      queryClient.invalidateQueries({ queryKey: ["highlights", user?.email] });
+    mutationFn: async (data) => {
+      const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+      const localEntry = { ...data, id: localId, _local: true };
+      saveHL([...loadHL(), localEntry]);
+      try { await db.entities.BibleHighlight.create(data); } catch {}
+      try { await awardPoints(user.email, "verse_highlight"); } catch {}
+      return localEntry;
     },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["highlights", user?.email] }),
   });
 
   const deleteHighlight = useMutation({
-    mutationFn: (id) => db.entities.BibleHighlight.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["highlights", user?.email] });
+    mutationFn: async (id) => {
+      saveHL(loadHL().filter(h => h.id !== id));
+      if (!String(id).startsWith('local-')) {
+        try { await db.entities.BibleHighlight.delete(id); } catch {}
+      }
+      return { id };
     },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["highlights", user?.email] }),
   });
 
   const deleteAllHighlights = async () => {
     if (!window.confirm('Remove all highlights? This cannot be undone.')) return;
+    saveHL([]);
     try {
       const allHighlights = await db.entities.BibleHighlight.filter({ user_email: user.email });
-      for (const h of allHighlights) {
-        await db.entities.BibleHighlight.delete(h.id);
-      }
-      queryClient.invalidateQueries({ queryKey: ["highlights", user?.email] });
-    } catch (error) {
-      console.error('Error deleting all highlights:', error);
-    }
+      for (const h of allHighlights) { try { await db.entities.BibleHighlight.delete(h.id); } catch {} }
+    } catch {}
+    queryClient.invalidateQueries({ queryKey: ["highlights", user?.email] });
   };
 
   const favoriteMutation = useMutation({
     mutationFn: async (data) => {
-      const isFavorited = userFavorites.some(f => f.book === data.book && f.chapter === data.chapter && f.start_verse === data.start_verse);
+      const matchKey = (f) => f.book === data.book && f.chapter === data.chapter && f.start_verse === data.start_verse;
+      const isFavorited = userFavorites.some(matchKey);
       if (isFavorited) {
-        const fav = userFavorites.find(f => f.book === data.book && f.chapter === data.chapter && f.start_verse === data.start_verse);
-        return db.entities.BibleFavorite.delete(fav.id);
-      } else {
-        await awardPoints(user.email, "verse_saved");
-        return db.entities.BibleFavorite.create(data);
+        const fav = userFavorites.find(matchKey);
+        saveFav(loadFav().filter(f => f.id !== fav.id));
+        if (fav.id && !String(fav.id).startsWith('local-')) {
+          try { await db.entities.BibleFavorite.delete(fav.id); } catch {}
+        }
+        return { id: fav.id };
       }
+      const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+      const localEntry = { ...data, id: localId, _local: true };
+      saveFav([...loadFav(), localEntry]);
+      try { await db.entities.BibleFavorite.create(data); } catch {}
+      try { await awardPoints(user.email, "verse_saved"); } catch {}
+      return localEntry;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorites", user?.email] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["favorites", user?.email] }),
   });
 
   const handleFavoriteToggle = (verseNum, text) => {
