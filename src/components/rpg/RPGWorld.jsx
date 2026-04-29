@@ -103,15 +103,32 @@ export default function RPGWorld({ character, progress, onStartMission, onViewSt
   useOnlineStatus(userEmail, character.name, character.name.toLowerCase(), progress.level, selectedLocation?.name || "Jerusalem");
   useNotifications(userEmail, character.name);
 
-  // Set random starting location on mount
+  // Two-location chooser — pick 2 random unlocked locations whenever there is
+  // no active selection. Player picks one → does 3 trials → returns to chooser
+  // with 2 NEW locations.
+  const [twoChoices, setTwoChoices] = useState(null);
+
+  const pickTwoChoices = React.useCallback(() => {
+    const candidates = LOCATION_MAP.filter(l => isUnlocked(l) && !isComplete(l));
+    const pool = candidates.length >= 2 ? candidates : LOCATION_MAP.filter(l => isUnlocked(l));
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, Math.min(2, shuffled.length));
+  }, [totalMissionsCompleted]); // re-evaluated when progression changes
+
   React.useEffect(() => {
-    if (!selectedLocation && LOCATION_MAP.length > 0) {
-      // Only select from locations with low unlock requirements (starter locations)
-      const starterLocs = LOCATION_MAP.filter(l => l.unlockAt <= 3);
-      const randomLoc = starterLocs[Math.floor(Math.random() * starterLocs.length)];
-      setSelectedLocation(randomLoc);
+    if (!selectedLocation && !twoChoices) {
+      setTwoChoices(pickTwoChoices());
     }
-  }, []);
+  }, [selectedLocation, twoChoices, pickTwoChoices]);
+
+  // When the player has completed all 3 trials at the active location,
+  // route them back to a fresh location chooser.
+  React.useEffect(() => {
+    if (selectedLocation && missionsCompletedAtLocation(selectedLocation) >= 3) {
+      setSelectedLocation(null);
+      setTwoChoices(pickTwoChoices());
+    }
+  }, [totalMissionsCompleted]); // fires after each mission complete
 
   // Generate clouds and stars once (stable references)
   const clouds = React.useMemo(() =>
@@ -463,6 +480,68 @@ export default function RPGWorld({ character, progress, onStartMission, onViewSt
         />
       </motion.div>
 
+      {/* Two-Location Chooser — appears whenever no location is active.
+          Player picks one, completes 3 trials, then returns here to two NEW choices. */}
+      {!selectedLocation && twoChoices && twoChoices.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-6"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="max-w-3xl w-full"
+          >
+            <div className="text-center mb-8">
+              <h2 className="font-display text-3xl font-bold text-white mb-2">Choose Your Path</h2>
+              <p className="text-white/70 font-body text-sm">
+                Two destinations await. Complete all three trials at the location you choose,
+                then a new pair of paths will be revealed.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {twoChoices.map((loc) => (
+                <motion.button
+                  key={loc.name}
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    playSound("missionSelect");
+                    setSelectedLocation(loc);
+                    setTwoChoices(null);
+                  }}
+                  className="relative bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-accent/40 hover:border-accent rounded-2xl p-6 text-left transition-all"
+                >
+                  <div className="text-5xl mb-3 text-center">{loc.emoji}</div>
+                  <h3 className="font-display text-2xl font-bold text-white mb-1 text-center">{loc.name}</h3>
+                  <p className="font-body text-xs text-accent text-center mb-3 uppercase tracking-wider">{loc.region}</p>
+                  <p className="font-body text-sm text-white/80 text-center mb-2">{loc.description}</p>
+                  <p className="font-body text-xs text-white/60 italic text-center">{loc.context}</p>
+                  <div className="flex justify-center gap-1 mt-4">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className={`h-1.5 w-8 rounded-full ${i < missionsCompletedAtLocation(loc) ? "bg-accent" : "bg-white/20"}`} />
+                    ))}
+                  </div>
+                  <div className="mt-3 text-center text-xs text-white/50 font-body">
+                    {3 - missionsCompletedAtLocation(loc)} trial{3 - missionsCompletedAtLocation(loc) === 1 ? "" : "s"} remaining
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+            <div className="text-center mt-6">
+              <button
+                onClick={() => setTwoChoices(pickTwoChoices())}
+                className="text-white/50 hover:text-white text-xs font-body underline"
+              >
+                Reshuffle the two paths
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
       {/* Mission Selection Modal */}
       {selectedLocation && (
         <motion.div
@@ -502,7 +581,8 @@ export default function RPGWorld({ character, progress, onStartMission, onViewSt
                     onClick={() => {
                       playSound("missionSelect");
                       onStartMission(`trial_${selectedLocation.name}_${num}`, userEmail, characterId, selectedLocation);
-                      setSelectedLocation(null);
+                      // Keep selectedLocation set so the player returns here for trials 2 & 3.
+                      // The post-trial-3 effect above will clear it and regenerate two new choices.
                     }}
                     className={`w-full px-4 py-2 rounded-lg transition-colors text-left font-body text-sm flex items-center gap-2 ${
                       completed ? "bg-green-500/10 border border-green-500/30 text-green-400" : "bg-white/10 hover:bg-white/20 text-white"
