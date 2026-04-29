@@ -140,13 +140,6 @@ function GameCard({ game, index, onClick }) {
            <span className="text-[10px] font-body font-black tracking-widest px-2.5 py-1 rounded-full bg-accent text-primary">
              {game.badgeText}
            </span>
-           <motion.span
-            className="text-2xl"
-            animate={hovered ? { rotate: [0, -10, 10, 0], scale: [1, 1.3, 1] } : {}}
-            transition={{ duration: 0.5 }}
-          >
-            {game.emoji}
-          </motion.span>
         </div>
 
         {/* Title & tagline */}
