@@ -8,6 +8,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStatsSection from "@/components/profile/ProfileStatsSection";
 import FriendsManager from "@/components/profile/FriendsManager";
 import AvatarCustomizer from "@/components/profile/AvatarCustomizer";
+import CursorSettings from "@/components/profile/CursorSettings";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -115,6 +116,9 @@ export default function Profile() {
 
           {/* Friends Section */}
           <FriendsManager user={user} profile={profile} />
+
+          {/* Cursor color picker */}
+          <CursorSettings />
         </motion.div>
       </div>
     </div>
