@@ -156,11 +156,11 @@ export default function NotebookModal({ userEmail, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto"
     >
       <div className="max-w-4xl w-full py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display text-3xl font-bold text-white">Notebook</h2>
+          <h2 className="font-display text-3xl font-bold text-foreground">Notebook</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowWhiteboard(true)}
@@ -172,7 +172,7 @@ export default function NotebookModal({ userEmail, onClose }) {
             </button>
             <button
               onClick={onClose}
-              className="text-white/60 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Close notebook"
             >
               <X className="w-6 h-6" />
@@ -182,7 +182,7 @@ export default function NotebookModal({ userEmail, onClose }) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[70vh]">
           {/* Chapters Sidebar */}
-          <div className="bg-black/90 border border-white/20 rounded-lg p-4 overflow-y-auto">
+          <div className="bg-card border border-border rounded-lg p-4 overflow-y-auto">
             <button
               onClick={() => {
                 setShowNewNote(true);
@@ -211,14 +211,14 @@ export default function NotebookModal({ userEmail, onClose }) {
                           [chapter]: !isExpanded,
                         }))
                       }
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-left"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/40 hover:bg-secondary/60 transition-colors text-left"
                     >
                       {isExpanded ? (
                         <ChevronDown className="w-4 h-4" />
                       ) : (
                         <ChevronRight className="w-4 h-4" />
                       )}
-                      <span className="font-semibold text-white text-sm flex-1">{chapter}</span>
+                      <span className="font-semibold text-foreground text-sm flex-1">{chapter}</span>
                       {hasPinned && <span className="text-accent text-xs">📌</span>}
                     </button>
 
@@ -243,7 +243,7 @@ export default function NotebookModal({ userEmail, onClose }) {
                                     setNoteContent(note.content);
                                     setShowNewNote(true);
                                   }}
-                                  className="w-full text-left px-3 py-1.5 rounded-lg bg-white/5 hover:bg-accent/20 transition-colors text-xs text-white/70 hover:text-white"
+                                  className="w-full text-left px-3 py-1.5 rounded-lg bg-secondary/40 hover:bg-accent/20 transition-colors text-xs text-foreground/80 hover:text-foreground"
                                 >
                                   {note.is_pinned && <Pin className="w-3 h-3 inline mr-1 text-accent" />}
                                   {note.subsection_title || "(Untitled)"}
@@ -260,7 +260,7 @@ export default function NotebookModal({ userEmail, onClose }) {
           </div>
 
           {/* Editor Panel */}
-          <div className="md:col-span-2 bg-black/90 border border-white/20 rounded-lg p-4 flex flex-col overflow-hidden">
+          <div className="md:col-span-2 bg-card border border-border rounded-lg p-4 flex flex-col overflow-hidden">
             {showNewNote ? (
               <>
                 {/* Note type toggle */}
@@ -270,7 +270,7 @@ export default function NotebookModal({ userEmail, onClose }) {
                     className={`flex-1 px-3 py-2 rounded-lg font-body text-sm font-semibold transition-colors ${
                       noteType === "chapter"
                         ? "bg-accent text-accent-foreground"
-                        : "border border-white/20 text-white/70 hover:text-white"
+                        : "border border-border text-foreground/80 hover:text-foreground"
                     }`}
                   >
                     Chapter Note
@@ -280,7 +280,7 @@ export default function NotebookModal({ userEmail, onClose }) {
                     className={`flex-1 px-3 py-2 rounded-lg font-body text-sm font-semibold transition-colors ${
                       noteType === "reflection"
                         ? "bg-accent text-accent-foreground"
-                        : "border border-white/20 text-white/70 hover:text-white"
+                        : "border border-border text-foreground/80 hover:text-foreground"
                     }`}
                   >
                     Quick Reflection
@@ -290,31 +290,31 @@ export default function NotebookModal({ userEmail, onClose }) {
                 {noteType === "chapter" && (
                   <div className="space-y-3 mb-4">
                     <div>
-                      <label className="text-white/60 text-xs font-semibold">Chapter</label>
+                      <label className="text-muted-foreground text-xs font-semibold">Chapter</label>
                       <input
                         type="text"
                         value={newChapter}
                         onChange={(e) => setNewChapter(e.target.value)}
                         placeholder="e.g. Prayer, Scripture Study, Daily Reflections"
-                        className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-accent/50"
+                        className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary/40 border border-border/60 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-accent/50"
                       />
                     </div>
 
                     <div>
-                      <label className="text-white/60 text-xs font-semibold">Sub-Chapter (Optional)</label>
+                      <label className="text-muted-foreground text-xs font-semibold">Sub-Chapter (Optional)</label>
                       <input
                         type="text"
                         value={newSubsection}
                         onChange={(e) => setNewSubsection(e.target.value)}
                         placeholder="e.g. Psalm 23, Faith, Morning Prayer"
-                        className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-accent/50"
+                        className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary/40 border border-border/60 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-accent/50"
                       />
                     </div>
                   </div>
                 )}
 
                 {noteType === "reflection" && (
-                  <p className="text-white/50 text-xs mb-3 italic">
+                  <p className="text-muted-foreground text-xs mb-3 italic">
                     Reflections are filed under their own chapter — just write what's on your heart.
                   </p>
                 )}
@@ -323,7 +323,7 @@ export default function NotebookModal({ userEmail, onClose }) {
                   value={noteContent}
                   onChange={(e) => setNoteContent(e.target.value)}
                   placeholder="Write your note here... You can use markdown formatting."
-                  className="flex-1 p-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-accent/50 resize-none font-body text-sm"
+                  className="flex-1 p-3 rounded-lg bg-secondary/40 border border-border/60 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-accent/50 resize-none font-body text-sm"
                 />
 
                 <div className="flex gap-2 mt-4">
@@ -332,7 +332,7 @@ export default function NotebookModal({ userEmail, onClose }) {
                       setShowNewNote(false);
                       setEditingNote(null);
                     }}
-                    className="flex-1 px-4 py-2 rounded-lg border border-white/20 hover:border-white/40 text-white/70 hover:text-white transition-colors"
+                    className="flex-1 px-4 py-2 rounded-lg border border-border hover:border-white/40 text-foreground/80 hover:text-foreground transition-colors"
                   >
                     Cancel
                   </button>
@@ -356,7 +356,7 @@ export default function NotebookModal({ userEmail, onClose }) {
                 </div>
               </>
             ) : (
-              <div className="flex items-center justify-center h-full text-white/50">
+              <div className="flex items-center justify-center h-full text-muted-foreground">
                 <p>Select a note to view or create a new one</p>
               </div>
             )}
