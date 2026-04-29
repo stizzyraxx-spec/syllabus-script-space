@@ -295,9 +295,17 @@ export default async function handler(req, res) {
     const difficulty = body.difficulty || 'easy';
     const count = body.count || 5;
 
-    const questionsPool = QUESTIONS_BY_DIFFICULTY[difficulty] || QUESTIONS_BY_DIFFICULTY.easy;
-    const shuffled = questionsPool.sort(() => Math.random() - 0.5).slice(0, Math.min(count, questionsPool.length));
-    
+    const primaryPool = QUESTIONS_BY_DIFFICULTY[difficulty] || QUESTIONS_BY_DIFFICULTY.easy;
+    // Build a global fallback pool from all difficulties to top up if primary is too small
+    const allPool = Object.values(QUESTIONS_BY_DIFFICULTY).flat();
+
+    let shuffled = [...primaryPool].sort(() => Math.random() - 0.5).slice(0, count);
+    if (shuffled.length < count) {
+      const seen = new Set(shuffled.map(q => q.question));
+      const topUp = allPool.filter(q => !seen.has(q.question)).sort(() => Math.random() - 0.5).slice(0, count - shuffled.length);
+      shuffled = [...shuffled, ...topUp];
+    }
+
     return res.status(200).json({
       questions: shuffled.map((q) => ({
         category: q.category,
@@ -306,7 +314,7 @@ export default async function handler(req, res) {
         correct_index: q.correct_index,
         reasoning: q.reasoning,
       })),
-      total_available: questionsPool.length,
+      total_available: allPool.length,
       difficulty_level: difficulty,
     });
   } catch (error) {
