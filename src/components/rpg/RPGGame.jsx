@@ -132,6 +132,12 @@ export default function RPGGame({ userEmail }) {
   const [modernMode, setModernMode] = useState(false);
   const queryClient = useQueryClient();
 
+  // Opt the RPG game out of the gold cursor — keep the native pointer here
+  React.useEffect(() => {
+    document.body.classList.add("rpg-active");
+    return () => document.body.classList.remove("rpg-active");
+  }, []);
+
   useEffect(() => {
     const loadProgress = async () => {
       // First try to load from database
@@ -233,11 +239,20 @@ export default function RPGGame({ userEmail }) {
     };
 
     // Ensure level calculation from xp if not provided
-    const finalLevel = scoreData.level || Math.floor((playerProgress.xp + scoreData.xp) / 100) + 1;
-    
+    // Add the per-mission deltas to the running totals (the previous version
+    // was spreading adjustedData over playerProgress, which overwrote
+    // cumulative XP / scores with the per-mission delta — bug).
+    const newXp = (playerProgress.xp || 0) + (adjustedData.xp || 0);
+    const finalLevel = scoreData.level || Math.floor(newXp / 100) + 1;
+
     const updated = {
       ...playerProgress,
-      ...adjustedData,
+      xp: newXp,
+      faith_score:     (playerProgress.faith_score     || 0) + (adjustedData.faith_score     || 0),
+      wisdom_score:    (playerProgress.wisdom_score    || 0) + (adjustedData.wisdom_score    || 0),
+      obedience_score: (playerProgress.obedience_score || 0) + (adjustedData.obedience_score || 0),
+      integrity_score: (playerProgress.integrity_score || 0) + (adjustedData.integrity_score || 0),
+      total_score:     (playerProgress.total_score     || 0) + (adjustedData.xp              || 0),
       level: finalLevel,
       completed_missions: [...(playerProgress.completed_missions || []), { ...currentMission, theme: scoreData.missionTitle || currentMission.id }],
     };

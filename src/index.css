@@ -95,10 +95,19 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Mouse pointer stays default-visible everywhere.
-   Hide the blinking text caret inside inputs / textareas / contenteditable —
-   browsers don't expose a cross-browser way to disable the blink animation,
-   so we hide the caret itself. Selection/typing still works normally. */
+/* Hide blinking text caret inside inputs / textareas / contenteditable. */
 input, textarea, [contenteditable="true"], [contenteditable=""] {
   caret-color: transparent;
 }
+
+/* Gold cursor: when enabled (GoldCursor mounts), hide the native pointer
+   everywhere except in text fields. The body class `rpg-active` (set by the
+   RPG game) opts out and restores the native cursor. */
+body:not(.rpg-active), body:not(.rpg-active) * { cursor: var(--gold-cursor-hide, auto); }
+body:not(.rpg-active) input,
+body:not(.rpg-active) textarea,
+body:not(.rpg-active) [contenteditable="true"],
+body:not(.rpg-active) [contenteditable=""] { cursor: text !important; }
+/* tldraw and other interactive canvases need their own cursors */
+body:not(.rpg-active) .tldraw, body:not(.rpg-active) .tldraw *,
+body:not(.rpg-active) .tl-canvas, body:not(.rpg-active) .tl-canvas * { cursor: auto !important; }
