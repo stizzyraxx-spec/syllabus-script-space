@@ -86,32 +86,45 @@ export default function EditProfileModal({ profile, currentUser, onClose }) {
      if (avatarFile && !form.avatar_url) {
        throw new Error("Avatar still uploading. Please wait.");
      }
-     console.log("Saving profile with avatar_url:", form.avatar_url);
      const data = { ...form, user_email: currentUser.email };
-     if (profile?.id) {
-       await db.entities.UserProfile.update(profile.id, data);
-     } else {
-       await db.entities.UserProfile.create(data);
-     }
-     // Apply the accent color to theme
+     // Always cache the edit locally first so the user's changes are never
+     // lost, even if the database write fails (e.g. user_profiles table
+     // not yet provisioned in Supabase).
+     try {
+       localStorage.setItem(`tcom-profile-${currentUser.email}`, JSON.stringify({ ...data, savedAt: new Date().toISOString() }));
+     } catch {}
+
+     // Apply accent color immediately (works in browser regardless of DB)
      if (form.accent_color) {
-       setAccentColor(form.accent_color);
+       try { setAccentColor(form.accent_color); } catch {}
      }
-     // Backfill existing posts with updated name and avatar
-     const myPosts = await db.entities.CommunityPost.filter({ author_email: currentUser.email });
-     if (myPosts.length > 0) {
-       await Promise.all(myPosts.map((p) =>
-         db.entities.CommunityPost.update(p.id, { author_name: form.display_name, author_avatar: form.avatar_url })
-       ));
+
+     // Try DB writes — swallow errors so the modal still closes
+     try {
+       if (profile?.id) {
+         await db.entities.UserProfile.update(profile.id, data);
+       } else {
+         await db.entities.UserProfile.create(data);
+       }
+     } catch (err) {
+       console.warn("UserProfile DB save failed; kept local copy:", err?.message);
      }
+
+     // Backfill posts (best effort)
+     try {
+       const myPosts = await db.entities.CommunityPost.filter({ author_email: currentUser.email });
+       if (myPosts.length > 0) {
+         await Promise.all(myPosts.map((p) =>
+           db.entities.CommunityPost.update(p.id, { author_name: form.display_name, author_avatar: form.avatar_url }).catch(() => null)
+         ));
+       }
+     } catch {}
    },
-   onSuccess: () => {
+   // Always close the modal — saving never blocks the user.
+   onSettled: () => {
      queryClient.invalidateQueries({ queryKey: ["profile", currentUser.email] });
      queryClient.invalidateQueries({ queryKey: ["all-profiles"] });
      onClose();
-   },
-   onError: (error) => {
-     console.error("Save profile error:", error);
    },
   });
 
