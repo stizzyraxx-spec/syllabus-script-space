@@ -95,10 +95,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Hide blinking text caret inside inputs / textareas / contenteditable. */
-input, textarea, [contenteditable="true"], [contenteditable=""] {
-  caret-color: transparent;
-}
+/* Native text caret stays visible — users need to see where they're typing. */
 
 /* Gold cursor: when enabled (GoldCursor mounts), hide the native pointer
    everywhere except in text fields. The body class `rpg-active` (set by the
