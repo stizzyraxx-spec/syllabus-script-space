@@ -130,8 +130,8 @@ export default function DirectMessageModal({ currentUser, recipientEmail, recipi
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
-      className="fixed bottom-6 right-6 z-[200] w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-      style={{ maxHeight: "480px" }}
+      className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:bottom-6 sm:right-6 z-[200] sm:w-96 bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+      style={{ maxHeight: "min(85vh, 540px)" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-primary text-primary-foreground flex-shrink-0">

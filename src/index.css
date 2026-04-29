@@ -97,6 +97,16 @@ html {
 
 /* Native text caret stays visible — users need to see where they're typing. */
 
+/* Mobile polish: prevent horizontal overflow, respect safe-area insets,
+   and stop iOS from auto-zooming on inputs by guaranteeing >=16px font size */
+html, body { overflow-x: hidden; }
+@supports (padding: env(safe-area-inset-bottom)) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+}
+@media (max-width: 640px) {
+  input, textarea, select { font-size: 16px !important; }
+}
+
 /* Gold cursor: when enabled (GoldCursor mounts), hide the native pointer
    everywhere except in text fields. The body class `rpg-active` (set by the
    RPG game) opts out and restores the native cursor. */

@@ -180,7 +180,7 @@ export default function NotebookModal({ userEmail, onClose }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[70vh]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[80vh] md:h-[70vh]">
           {/* Chapters Sidebar */}
           <div className="bg-card border border-border rounded-lg p-4 overflow-y-auto">
             <button
